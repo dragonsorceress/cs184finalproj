@@ -11,15 +11,6 @@ function load(url) {
     request.send();
 }
 
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-}
-
 function createAudioGraph(buffer, context) {
     var source = null
         startedAt = 0,
@@ -49,7 +40,7 @@ function createAudioGraph(buffer, context) {
         // Initializes source node to play the audio
         source = context.createBufferSource();
         source.buffer = buffer;
-        source.loop = true;
+        source.loop = false;
 
         // Creates a splitter node to process multiple channels of audio
         splitter = context.createChannelSplitter(2);
@@ -95,7 +86,7 @@ function createAudioGraph(buffer, context) {
             for (var i = 0; i < left.length; i++){
                 var value = left[i];
                 left_ctx.fillStyle = gradient_l;
-                left_ctx.fillRect(i*2, 512 - (2*value), 1, (2*value));
+                left_ctx.fillRect(40+i*2, 512 - (2*value), 1, (2*value));
             }
             right_ctx.clearRect(0, 0, 512, 600);
             var gradient_r = right_ctx.createLinearGradient(0,0,0,512);
@@ -196,5 +187,3 @@ function error(e){
 }
 
 load(url);
-
-
