@@ -26,6 +26,10 @@ function createAudioGraph(buffer, context) {
         pausedAt = 0,
         playing = false, 
         scriptNode = null;
+    var left_canvas = document.getElementById("left");
+    var right_canvas = document.getElementById("right");
+    var left_ctx = left_canvas.getContext("2d");
+    var right_ctx = right_canvas.getContext("2d");
     var play = function() {
         // Initializes node to stream in audio data in chunks
         scriptNode = context.createScriptProcessor(2048, 2, 2);
@@ -72,10 +76,7 @@ function createAudioGraph(buffer, context) {
            coefficients, as they form complex conjagates with the first 256 coefficients
            (same magnitude).
         */
-        var left_canvas = document.getElementById("left");
-        var right_canvas = document.getElementById("right");
-        var left_ctx = left_canvas.getContext("2d");
-        var right_ctx = right_canvas.getContext("2d");
+        
         scriptNode.onaudioprocess = function(e) {
             var left = new Uint8Array(left_analyser.frequencyBinCount);
             var right = new Uint8Array(right_analyser.frequencyBinCount);
@@ -96,8 +97,6 @@ function createAudioGraph(buffer, context) {
                 left_ctx.fillStyle = gradient_l;
                 left_ctx.fillRect(i*2, 512 - (2*value), 1, (2*value));
             }
-            console.log(i*2)
-
             right_ctx.clearRect(0, 0, 512, 600);
             var gradient_r = right_ctx.createLinearGradient(0,0,0,512);
             gradient_r.addColorStop(1,'#000000');
@@ -133,8 +132,12 @@ function createAudioGraph(buffer, context) {
             source.stop(0);
             source = null;
         }
-        left_ctx.clearRect(0, 0, 512, 600);
-        right_ctx.clearRect(0, 0, 512, 600);
+        if (left_ctx) {
+            left_ctx.clearRect(0, 0, 512, 600);
+        }
+        if (right_ctx) {
+            right_ctx.clearRect(0, 0, 512, 600);
+        }
         pausedAt = 0;
         startedAt = 0;
         playing = false;
