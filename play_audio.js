@@ -133,6 +133,8 @@ function createAudioGraph(buffer, context) {
             source.stop(0);
             source = null;
         }
+        left_ctx.clearRect(0, 0, 512, 600);
+        right_ctx.clearRect(0, 0, 512, 600);
         pausedAt = 0;
         startedAt = 0;
         playing = false;
