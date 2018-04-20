@@ -1,7 +1,5 @@
-var url = 'speaking_gently.mp3';
+var url = 'such_great_heights.mp3';
 var context = new AudioContext();
-var source;
-var splitter;
 
 function load(url) {
     var request = new XMLHttpRequest();
@@ -11,6 +9,15 @@ function load(url) {
         context.decodeAudioData(request.response, init, error);
     }
     request.send();
+}
+
+function sleep(milliseconds) {
+  var start = new Date().getTime();
+  for (var i = 0; i < 1e7; i++) {
+    if ((new Date().getTime() - start) > milliseconds){
+      break;
+    }
+  }
 }
 
 function createAudioGraph(buffer, context) {
@@ -28,12 +35,12 @@ function createAudioGraph(buffer, context) {
         // Creates node to analyze data from the left channel
         var left_analyser = context.createAnalyser();
         left_analyser.smoothingTimeConstant = 0.6;
-        left_analyser.fftSize = 512;
+        left_analyser.fftSize = 256;
 
         // Creates node to analyze data from the left channel
         var right_analyser = context.createAnalyser();
         right_analyser.smoothingTimeConstant = 0.6;
-        right_analyser.fftSize = 512;
+        right_analyser.fftSize = 256;
 
         // Initializes source node to play the audio
         source = context.createBufferSource();
@@ -65,13 +72,43 @@ function createAudioGraph(buffer, context) {
            coefficients, as they form complex conjagates with the first 256 coefficients
            (same magnitude).
         */
+        var left_canvas = document.getElementById("left");
+        var right_canvas = document.getElementById("right");
+        var left_ctx = left_canvas.getContext("2d");
+        var right_ctx = right_canvas.getContext("2d");
         scriptNode.onaudioprocess = function(e) {
-            var left = new Float32Array(left_analyser.frequencyBinCount);
-            var right = new Float32Array(right_analyser.frequencyBinCount);
-            left_analyser.getFloatFrequencyData(left);
-            right_analyser.getFloatFrequencyData(right);
-            console.log("left:", left);
-            console.log("right:", right);
+            var left = new Uint8Array(left_analyser.frequencyBinCount);
+            var right = new Uint8Array(right_analyser.frequencyBinCount);
+            left_analyser.getByteFrequencyData(left);
+            right_analyser.getByteFrequencyData(right);
+            
+            left_ctx.clearRect(0, 0, 512, 600);
+            var gradient_l = left_ctx.createLinearGradient(0,0,0,512);
+            gradient_l.addColorStop(1,'#000000');
+            gradient_l.addColorStop(0.3,'#ff0000');
+            gradient_l.addColorStop(0.7,'#ffff00');
+            gradient_l.addColorStop(0,'#ffff00');
+            
+
+            left = left.reverse();
+            for (var i = 0; i < left.length; i++){
+                var value = left[i];
+                left_ctx.fillStyle = gradient_l;
+                left_ctx.fillRect(i*2, 512 - (2*value), 1, (2*value));
+            }
+            console.log(i*2)
+
+            right_ctx.clearRect(0, 0, 512, 600);
+            var gradient_r = right_ctx.createLinearGradient(0,0,0,512);
+            gradient_r.addColorStop(1,'#000000');
+            gradient_r.addColorStop(0.3,'#0000ff');
+            gradient_r.addColorStop(0.7,'#00ff00');
+            gradient_r.addColorStop(0,'#00ff00');
+            right_ctx.fillStyle = gradient_r;
+            for (var i = 0; i < right.length; i++){
+                var value = right[i];
+                right_ctx.fillRect(i*2, 512 - (2*value), 1, (2*value));
+            }
         };
 
         var offset = pausedAt;
@@ -118,6 +155,7 @@ function createAudioGraph(buffer, context) {
     var getDuration = function() {
       return buffer.duration;
     };
+
     return {
         getCurrentTime: getCurrentTime,
         getDuration: getDuration,
