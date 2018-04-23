@@ -15,7 +15,7 @@ function createAudioGraph(buffer, context) {
     var source = null
         startedAt = 0,
         pausedAt = 0,
-        playing = false, 
+        playing = false,
         scriptNode = null;
     var left_canvas = document.getElementById("left");
     var right_canvas = document.getElementById("right");
@@ -59,28 +59,28 @@ function createAudioGraph(buffer, context) {
         // The source is connected to the audio file
         source.connect(context.destination);
 
-        /* 
+        /*
            Here is where the magic happens. We can now pull in frequency data from
            both channels and do stuff with these arrays. Each array contains the
-           magnitudes of the coefficients of the first 256 frequency components of the 
-           size 512 DFT. The remaining 256 components are just the reverse of the computed 
+           magnitudes of the coefficients of the first 256 frequency components of the
+           size 512 DFT. The remaining 256 components are just the reverse of the computed
            coefficients, as they form complex conjagates with the first 256 coefficients
            (same magnitude).
         */
-        
+
         scriptNode.onaudioprocess = function(e) {
             var left = new Uint8Array(left_analyser.frequencyBinCount);
             var right = new Uint8Array(right_analyser.frequencyBinCount);
             left_analyser.getByteFrequencyData(left);
             right_analyser.getByteFrequencyData(right);
-            
+
             left_ctx.clearRect(0, 0, 512, 600);
             var gradient_l = left_ctx.createLinearGradient(0,0,0,512);
             gradient_l.addColorStop(1,'#000000');
             gradient_l.addColorStop(0.3,'#ff0000');
             gradient_l.addColorStop(0.7,'#ffff00');
             gradient_l.addColorStop(0,'#ffff00');
-            
+
 
             left = left.reverse();
             for (var i = 0; i < left.length; i++){
@@ -115,7 +115,7 @@ function createAudioGraph(buffer, context) {
     };
 
     var stop = function() {
-        if (source) {          
+        if (source) {
             if (scriptNode) {
                 scriptNode.disconnect(context.destination);
             }
@@ -133,11 +133,11 @@ function createAudioGraph(buffer, context) {
         startedAt = 0;
         playing = false;
     };
-  
+
     var getPlaying = function() {
         return playing;
     };
-  
+
     var getCurrentTime = function() {
         if(pausedAt) {
             return pausedAt;
@@ -147,7 +147,7 @@ function createAudioGraph(buffer, context) {
         }
         return 0;
     };
-  
+
     var getDuration = function() {
       return buffer.duration;
     };

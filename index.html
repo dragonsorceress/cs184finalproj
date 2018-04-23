@@ -1,15 +1,98 @@
-
+<head>
 <script type="text/javascript"
   src="./play_audio.js"></script>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<style>
+    html, body, div, span, applet, object, iframe,
+    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+    a, abbr, acronym, address, big, cite, code,
+    del, dfn, em, img, ins, kbd, q, s, samp,
+    small, strike, strong, sub, sup, tt, var,
+    b, u, i, center,
+    dl, dt, dd, ol, ul, li,
+    fieldset, form, label, legend,
+    table, caption, tbody, tfoot, thead, tr, th, td,
+    article, aside, canvas, details, embed,
+    figure, figcaption, footer, header, hgroup,
+    menu, nav, output, ruby, section, summary,
+    time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+    }
+    /* HTML5 display-role reset for older browsers */
+    article, aside, details, figcaption, figure,
+    footer, header, hgroup, menu, nav, section {
+    display: block;
+    }
+    body {
+    line-height: 1;
+    }
+    ol, ul {
+    list-style: none;
+    }
+    blockquote, q {
+    quotes: none;
+    }
+    blockquote:before, blockquote:after,
+    q:before, q:after {
+    content: '';
+    content: none;
+    }
+    table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    }
+
+    html, body {
+        height:100%;
+        width:100%;
+    }
+
+    html {
+        box-sizing: border-box;
+    }
+
+    *, *:before, *:after {
+        box-sizing: inherit;
+    }
+
+    #left, #right {
+        height:100%;
+        width:50%;
+    }
+
+    #left {
+        float:left;
+    }
+    /* .menu {
+        position:relative;
+    } */
+
+    .menu {
+        position:absolute;
+        left: calc(50% - 50px);
+        top: 30px;
+    }
+
+    button {
+        width: 50px;
+    }
+
+</style>
 </head>
 <body>
-<button data-js="play">play</button>
-<button data-js="stop">stop</button>
-<div data-js="info"></div>
-<div id="wrapper">
-<canvas id="left" style="width:600px; height:512px"></canvas>
-<canvas id="right" style="width:600px; height:512px"></canvas>
-</div>
+    <div class="menu">
+        <button data-js="play">play</button>
+        <button data-js="stop">stop</button>
+    </div>
+    <div data-js="info"></div>
+    <div id="wrapper">
+        <canvas id="left"></canvas>
+        <canvas id="right"></canvas>
+    </div>
 </body>
 </html>
