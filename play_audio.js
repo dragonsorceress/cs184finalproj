@@ -1,4 +1,4 @@
-var url = 'such_great_heights.mp3';
+var url = 'speaking_gently.mp3';
 var context = new AudioContext();
 
 function load(url) {
@@ -21,6 +21,8 @@ function createAudioGraph(buffer, context) {
     var right_canvas = document.getElementById("right");
     var left_ctx = left_canvas.getContext("2d");
     var right_ctx = right_canvas.getContext("2d");
+    var volume_canvas = document.getElementById("volume");
+    var vol_ctx = volume_canvas.getContext("2d");
     var play = function() {
         // Initializes node to stream in audio data in chunks
         scriptNode = context.createScriptProcessor(2048, 2, 2);
@@ -73,7 +75,10 @@ function createAudioGraph(buffer, context) {
             var right = new Uint8Array(right_analyser.frequencyBinCount);
             left_analyser.getByteFrequencyData(left);
             right_analyser.getByteFrequencyData(right);
+            var left_volume = getAverageVolume(left);
+            var right_volume = getAverageVolume(right);
 
+            vol_ctx.clearRect(30, 0, 130, 200);
             left_ctx.clearRect(0, 0, 512, 600);
             var gradient_l = left_ctx.createLinearGradient(0,0,0,512);
             gradient_l.addColorStop(1,'#000000');
@@ -83,11 +88,14 @@ function createAudioGraph(buffer, context) {
 
 
             left = left.reverse();
+            left_ctx.fillStyle = gradient_l;
             for (var i = 0; i < left.length; i++){
                 var value = left[i];
-                left_ctx.fillStyle = gradient_l;
-                left_ctx.fillRect(40+i*2, 512 - (2*value), 1, (2*value));
+                left_ctx.fillRect(40 + i * 2, 512 - (2 * value), 1, (2 * value));
             }
+            vol_ctx.fillStyle = gradient_l;
+            vol_ctx.fillRect(30, 200 - left_volume, 50, 200);
+
             right_ctx.clearRect(0, 0, 512, 600);
             var gradient_r = right_ctx.createLinearGradient(0,0,0,512);
             gradient_r.addColorStop(1,'#000000');
@@ -97,8 +105,10 @@ function createAudioGraph(buffer, context) {
             right_ctx.fillStyle = gradient_r;
             for (var i = 0; i < right.length; i++){
                 var value = right[i];
-                right_ctx.fillRect(i*2, 512 - (2*value), 1, (2*value));
+                right_ctx.fillRect(i * 2, 512 - (2 * value), 1, (2 * value));
             }
+            vol_ctx.fillStyle = gradient_r;
+            vol_ctx.fillRect(80, 200 - right_volume, 50, 200);
         };
 
         var offset = pausedAt;
@@ -106,6 +116,16 @@ function createAudioGraph(buffer, context) {
         pausedAt = 0;
         playing = true;
         source.start(0, offset);
+    }
+
+    function getAverageVolume(array) {
+        var total_freq = 0;
+
+        for (var i = 0; i < array.length; ++i) {
+            total_freq += array[i];
+        }
+
+        return total_freq / array.length;
     }
 
     var pause = function() {
@@ -128,6 +148,9 @@ function createAudioGraph(buffer, context) {
         }
         if (right_ctx) {
             right_ctx.clearRect(0, 0, 512, 600);
+        }
+        if (vol_ctx) {
+            vol_ctx.clearRect(30, 0, 90, 200);
         }
         pausedAt = 0;
         startedAt = 0;
