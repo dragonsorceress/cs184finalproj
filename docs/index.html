@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+  }
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>Music Visualizer | CS 184 Final Project</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+</head>
+
+
+<body>
+
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
+<h1 align="middle">Final Project: Music Visualizer</h1>
+<h2 align="middle">Jarry Xiao<br>Jacky Lu<br>Lucy Chen</h2>
+
+<br><br>
+
+<div>
+
+<h2 align="middle">Milestone Report</h2>
+<p>So far, we’ve primarily dealt with processing an input audio signal to generate the frequency data we need to create our visualizer, which we’ve achieved by using the tools provided by the Web Audio API. In particular, API contains two types of nodes that are useful in processing the audio signal: the Channel Splitter Node and the Analyzer Node. We first pass the audio signal through a Channel Splitter Node to extract the signal for the left and right channels. We then pass each channel’s signal through an Analyzer Node, which internally computes the FFT over the signal while leaving the signal unchanged, allowing us to perform signal processing in real time. Finally, we can extract the processed frequency values from the node, which can then be used as the input values for the visualization. Additionally, we can use this same set of frequency data to display the volume, which we treat as the strength of the audio signal. We can determine the strength of the signal by averaging over the extracted frequencies in each time block, which we’ve presented here as a simple set of bars that vary in real-time with our computed signal strength. We currently display in the simple visualization below:</p>
+
+<img src="visual_demo.gif" style="width:100%;height:100%;">
+
+<p>While we haven’t yet done as much on the graphical portion of the music visualizer as we were originally planning to, the audio processing is essentially complete, though we may consider also extracting volume-based information (which can be done using the frequency data we already have). As such, we will be heavily focusing on further developing the complexity and aesthetics of our visual representation in this upcoming week.</p>
+
+</body>
+</html>
