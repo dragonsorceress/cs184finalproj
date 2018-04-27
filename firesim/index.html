@@ -110,7 +110,7 @@ function handleTextureLoaded(image,index,textureName) {
   if (index < textureList.length-1)
     loadTexture("textures/" + textureList[index+1],index+1);
   //texturesLoadedCount += 1;
-  
+
 }
 
 function loadAllTextures() {
@@ -168,51 +168,51 @@ function createSparkParticle(emitCenter) {
   sparkParticles.push(particle);
 }
 
-var currentlyPressedKeys = {};
-mouseDown = false;
-mousePos = {};
-
-function handleKeyDown(event) {
-  currentlyPressedKeys[event.keyCode] = true;
-}
-
-function handleKeyUp(event) {
-  currentlyPressedKeys[event.keyCode] = false;
-}
-
-function canvasCoordinates(canvas,pos) {
-  var rect = canvas.getBoundingClientRect();
-  return {x:pos.x-rect.left,y:pos.y-rect.top};
-}
-
-function handleMouseDown(event) {
- mouseDown = true;
- mousePos = canvasCoordinates(canvas,{x:event.clientX,y:event.clientY});
-}
-
-function handleMouseMove(event) {
- mousePos = canvasCoordinates(canvas,{x:event.clientX,y:event.clientY});
-}
-
-function handleMouseUp(event) {
- mouseDown = false;
-}
-
-function setupSlider(id,valueId,value,sliderMinMax,step,changeCallback) {
-  var slider = document.getElementById(id);
-  var sliderDiv = document.getElementById(valueId);
-  //console.log(id + " " + valueId);
-  slider.min = sliderMinMax.min;
-  slider.max = sliderMinMax.max;
-  slider.step = step;
-  slider.value = value;
-  slider.oninput = function() {
-    newValue = this.value;
-    sliderDiv.innerHTML = newValue;
-    changeCallback(newValue);
-  };
-  slider.oninput();
-}
+// var currentlyPressedKeys = {};
+// mouseDown = false;
+// mousePos = {};
+//
+// function handleKeyDown(event) {
+//   currentlyPressedKeys[event.keyCode] = true;
+// }
+//
+// function handleKeyUp(event) {
+//   currentlyPressedKeys[event.keyCode] = false;
+// }
+//
+// function canvasCoordinates(canvas,pos) {
+//   var rect = canvas.getBoundingClientRect();
+//   return {x:pos.x-rect.left,y:pos.y-rect.top};
+// }
+//
+// function handleMouseDown(event) {
+//  mouseDown = true;
+//  mousePos = canvasCoordinates(canvas,{x:event.clientX,y:event.clientY});
+// }
+//
+// function handleMouseMove(event) {
+//  mousePos = canvasCoordinates(canvas,{x:event.clientX,y:event.clientY});
+// }
+//
+// function handleMouseUp(event) {
+//  mouseDown = false;
+// }
+//
+// function setupSlider(id,valueId,value,sliderMinMax,step,changeCallback) {
+//   var slider = document.getElementById(id);
+//   var sliderDiv = document.getElementById(valueId);
+//   //console.log(id + " " + valueId);
+//   slider.min = sliderMinMax.min;
+//   slider.max = sliderMinMax.max;
+//   slider.step = step;
+//   slider.value = value;
+//   slider.oninput = function() {
+//     newValue = this.value;
+//     sliderDiv.innerHTML = newValue;
+//     changeCallback(newValue);
+//   };
+//   slider.oninput();
+// }
 
 // initialze the scene
 function main() {
@@ -251,7 +251,7 @@ function main() {
   gl.enableVertexAttribArray(colorAttrib);
   textureCoordAttribute = gl.getAttribLocation(program, "a_texture_coord");
   gl.enableVertexAttribArray(textureCoordAttribute);
-  
+
 
   // lookup uniforms
   resolutionLocation = gl.getUniformLocation(program, "u_resolution");
@@ -260,46 +260,7 @@ function main() {
 
   // setup UI
 
-  setupSlider("fireEmitRate","fireEmitRateVal",options.fireEmitRate,options.fireEmitRateSlider,1,function(newValue) {options.fireEmitRate = +newValue;});
-  setupSlider("fireSize","fireSizeVal",options.fireSize,options.fireSizeSlider,1,function(newValue) {options.fireSize = +newValue;});
-  setupSlider("fireSizeVariance","fireSizeVarianceVal",options.fireSizeVariance,options.fireSizeVarianceSlider,0.01,function(newValue) {options.fireSizeVariance = +newValue;});
-  setupSlider("fireEmitAngleVariance","fireEmitAngleVarianceVal",options.fireEmitAngleVariance,options.fireEmitAngleVarianceSlider,0.0001,function(newValue) {options.fireEmitAngleVariance = +newValue;});
-  setupSlider("fireSpeed","fireSpeedVal",options.fireSpeed,options.fireSpeedSlider,0.01,function(newValue) {options.fireSpeed = +newValue;});
-  setupSlider("fireSpeedVariance","fireSpeedVarianceVal",options.fireSpeedVariance,options.fireSpeedVarianceSlider,0.01,function(newValue) {options.fireSpeedVariance = +newValue;});
-  setupSlider("fireDeathSpeed","fireDeathSpeedVal",options.fireDeathSpeed,options.fireDeathSpeedSlider,0.000001,function(newValue) {options.fireDeathSpeed = +newValue;});
-  setupSlider("fireTriangleness","fireTrianglenessVal",options.fireTriangleness,options.fireTrianglenessSlider,0.000001,function(newValue) {options.fireTriangleness = +newValue;});
-
-  setupSlider("fireTextureHue","fireTextureHueVal",options.fireTextureHue,options.fireTextureHueSlider,0.01,function(newValue) {
-      options.fireTextureHue = +newValue;
-      var hue = convertHue(options.fireTextureHue);
-      document.getElementById("fireTextureHueVal").style.backgroundColor = rgbToHex(HSVtoRGB(hue,1.0,1.0));
-  });
-  setupSlider("fireTextureHueVariance","fireTextureHueVarianceVal",options.fireTextureHueVariance,options.fireTextureHueVarianceSlider,0.01,function(newValue) {options.fireTextureHueVariance = +newValue;});
-  document.getElementById("fireTextureColorize").onchange = function() {
-    options.fireTextureColorize = this.checked;
-  };
-
-  document.getElementById("sparks").onchange = function() {
-    options.sparks = this.checked;
-  };
-
-  document.getElementById("wind").onchange = function() {
-    options.wind = this.checked;
-  };
-
-  document.getElementById("omnidirectionalWind").onchange = function() {
-    options.omnidirectionalWind = this.checked;
-  };
-
-  setupSlider("windStrength","windStrengthVal",options.windStrength,options.windStrengthSlider,0.01,function(newValue) {options.windStrength = +newValue;});
-  setupSlider("windTurbulance","windTurbulanceVal",options.windTurbulance,options.windTurbulanceSlider,0.00001,function(newValue) {options.windTurbulance = +newValue;});
-
-
-  document.onkeydown = handleKeyDown;
-  document.onkeyup = handleKeyUp;
-  canvas.onmousedown = handleMouseDown;
-  document.onmouseup = handleMouseUp;
-  document.onmousemove = handleMouseMove;
+  // setupSlidepmousemove = handleMouseMove;
 
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
   gl.enable(gl.BLEND);
@@ -308,7 +269,7 @@ function main() {
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); //Prevents t-coordinate wrapping (repeating).
 
   animloop();
-  
+
 }
 
 // main program loop
@@ -358,8 +319,8 @@ function logic() {
   var timeDifference = currentParticleTime - lastParticleTime;
 
   // we don't want to generate a ton of particles if the browser was minimized or something
-  if (timeDifference > 100)
-    timeDifference = 100;
+  // if (timeDifference > 100)
+  //   timeDifference = 100;
 
   // update fire particles
   particleDiscrepancy += options.fireEmitRate*(timeDifference)/1000.0;
@@ -368,7 +329,7 @@ function logic() {
     for (var pos = 0; pos < canvas.width; pos+=w) {
       createFireParticle({x:5+pos,y:canvas.height});
     }
-    
+
     particleDiscrepancy -= 1.0;
   }
 
@@ -539,7 +500,7 @@ varying highp vec2 v_texture_coord;
 uniform sampler2D u_sampler;
 
 void main() {
-   vec2 uv = gl_FragCoord.xy/vec2(800,600); 
+   vec2 uv = gl_FragCoord.xy/vec2(800,600);
    ;
    vec4 texColor = texture2D(u_sampler,v_texture_coord.xy);
    vec4 finalColor;
@@ -554,7 +515,7 @@ void main() {
 <body>
     <div class="containerDiv">
         <div class="leftPanel"> <canvas id="canvas" width="900" height="600"></canvas> </div>
-        <div class="rightPanel">
+        <div class="rightPanel" style="display:none">
           <h3>Particle Settings</h3>
 
           <label for="fireEmitRate">Emit Rate</label>
@@ -591,7 +552,7 @@ void main() {
 
           <div style="line-height: 64px;">
           <label for="fireTexture">Texture</label>
-          <select id="fireTexture" class="textureComboBox"></select> 
+          <select id="fireTexture" class="textureComboBox"></select>
           <img style="display:inline-block; vertical-align: middle;" id="fireTextureVal" width="64" height="64" src="textures/gradient.png"></img><br>
           </div>
 
@@ -633,5 +594,3 @@ void main() {
 </div>
 </body>
 </html>
-
-
