@@ -1,5 +1,7 @@
-var url = 'speaking_gently.mp3';
+var url = 'such_great_heights.mp3';
 var context = new AudioContext();
+var left_freqs = new Array();
+var right_freqs = new Array();
 
 function load(url) {
     var request = new XMLHttpRequest();
@@ -71,12 +73,12 @@ function createAudioGraph(buffer, context) {
         */
 
         scriptNode.onaudioprocess = function(e) {
-            var left = new Uint8Array(left_analyser.frequencyBinCount);
-            var right = new Uint8Array(right_analyser.frequencyBinCount);
-            left_analyser.getByteFrequencyData(left);
-            right_analyser.getByteFrequencyData(right);
-            var left_volume = getAverageVolume(left);
-            var right_volume = getAverageVolume(right);
+            left_freqs = new Uint8Array(left_analyser.frequencyBinCount);
+            right_freqs = new Uint8Array(right_analyser.frequencyBinCount);
+            left_analyser.getByteFrequencyData(left_freqs);
+            right_analyser.getByteFrequencyData(right_freqs);
+            /*var left_volume = getAverageVolume(left_freqs);
+            var right_volume = getAverageVolume(right_freqs);
 
             vol_ctx.clearRect(30, 0, 130, 200);
             left_ctx.clearRect(0, 0, 512, 600);
@@ -87,10 +89,10 @@ function createAudioGraph(buffer, context) {
             gradient_l.addColorStop(0,'#ffff00');
 
 
-            left = left.reverse();
+            left_freqs = left_freqs.reverse();
             left_ctx.fillStyle = gradient_l;
-            for (var i = 0; i < left.length; i++){
-                var value = left[i];
+            for (var i = 0; i < left_freqs.length; i++){
+                var value = left_freqs[i];
                 left_ctx.fillRect(40 + i * 2, 512 - (2 * value), 1, (2 * value));
             }
             vol_ctx.fillStyle = gradient_l;
@@ -103,12 +105,12 @@ function createAudioGraph(buffer, context) {
             gradient_r.addColorStop(0.7,'#00ff00');
             gradient_r.addColorStop(0,'#00ff00');
             right_ctx.fillStyle = gradient_r;
-            for (var i = 0; i < right.length; i++){
-                var value = right[i];
+            for (var i = 0; i < right_freqs.length; i++){
+                var value = right_freqs[i];
                 right_ctx.fillRect(i * 2, 512 - (2 * value), 1, (2 * value));
             }
             vol_ctx.fillStyle = gradient_r;
-            vol_ctx.fillRect(80, 200 - right_volume, 50, 200);
+            vol_ctx.fillRect(80, 200 - right_volume, 50, 200);*/
         };
 
         var offset = pausedAt;
