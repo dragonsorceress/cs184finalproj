@@ -8,7 +8,6 @@
 <meta property="og:url" content="http://ethanhjennings.github.io/webgl-fire-particles/"/>
 <meta property="og:image" content="http://ethanhjennings.github.io/webgl-fire-particles/screenshots/fire.png"/>
 <title>Fire Particle Demo (Final Project for Graphics)</title>
-<link type="text/css" href="css/webgl-tutorials.css" rel="stylesheet" />
 <script type="text/javascript" src="js_helpers/webgl-utils.js"></script>
 <script type="text/javascript" src="js_helpers/mathHelper.js"></script>
 <script type="text/javascript" src="js_helpers/otherHelper.js"></script>
@@ -168,57 +167,13 @@ function createSparkParticle(emitCenter) {
   sparkParticles.push(particle);
 }
 
-// var currentlyPressedKeys = {};
-// mouseDown = false;
-// mousePos = {};
-//
-// function handleKeyDown(event) {
-//   currentlyPressedKeys[event.keyCode] = true;
-// }
-//
-// function handleKeyUp(event) {
-//   currentlyPressedKeys[event.keyCode] = false;
-// }
-//
-// function canvasCoordinates(canvas,pos) {
-//   var rect = canvas.getBoundingClientRect();
-//   return {x:pos.x-rect.left,y:pos.y-rect.top};
-// }
-//
-// function handleMouseDown(event) {
-//  mouseDown = true;
-//  mousePos = canvasCoordinates(canvas,{x:event.clientX,y:event.clientY});
-// }
-//
-// function handleMouseMove(event) {
-//  mousePos = canvasCoordinates(canvas,{x:event.clientX,y:event.clientY});
-// }
-//
-// function handleMouseUp(event) {
-//  mouseDown = false;
-// }
-//
-// function setupSlider(id,valueId,value,sliderMinMax,step,changeCallback) {
-//   var slider = document.getElementById(id);
-//   var sliderDiv = document.getElementById(valueId);
-//   //console.log(id + " " + valueId);
-//   slider.min = sliderMinMax.min;
-//   slider.max = sliderMinMax.max;
-//   slider.step = step;
-//   slider.value = value;
-//   slider.oninput = function() {
-//     newValue = this.value;
-//     sliderDiv.innerHTML = newValue;
-//     changeCallback(newValue);
-//   };
-//   slider.oninput();
-// }
-
 // initialze the scene
 function main() {
 
   // Get A WebGL context
   canvas = document.getElementById("canvas");
+  canvas.width = document.body.clientWidth;
+  canvas.height = document.body.clientHeight;
   gl = getWebGLContext(canvas);
   if (!gl) {
     return;
@@ -472,6 +427,214 @@ function drawRects(rects,textureIndex) {
   gl.drawArrays(gl.TRIANGLES, 0, rects.length*6);
 }
 
+// AUDIO CODE STARTS HERE
+
+var url = '../speaking_gently.mp3';
+var context = new AudioContext();
+var left_freqs = new Array();
+var right_freqs = new Array();
+
+function load(url) {
+    var request = new XMLHttpRequest();
+    request.open("GET", url, true);
+    request.responseType = "arraybuffer";
+    request.onload = function() {
+        context.decodeAudioData(request.response, init, error);
+    }
+    request.send();
+}
+
+function createAudioGraph(buffer, context) {
+    var source = null
+        startedAt = 0,
+        pausedAt = 0,
+        playing = false,
+        scriptNode = null;
+    // var left_canvas = document.getElementById("left");
+    // var right_canvas = document.getElementById("right");
+    // var left_ctx = left_canvas.getContext("2d");
+    // var right_ctx = right_canvas.getContext("2d");
+    // var volume_canvas = document.getElementById("volume");
+    // var vol_ctx = volume_canvas.getContext("2d");
+    var play = function() {
+        // Initializes node to stream in audio data in chunks
+        scriptNode = context.createScriptProcessor(2048, 2, 2);
+        scriptNode.buffer = buffer;
+        scriptNode.connect(context.destination);
+
+        // Creates node to analyze data from the left channel
+        var left_analyser = context.createAnalyser();
+        left_analyser.smoothingTimeConstant = 0.6;
+        left_analyser.fftSize = 256;
+
+        // Creates node to analyze data from the left channel
+        var right_analyser = context.createAnalyser();
+        right_analyser.smoothingTimeConstant = 0.6;
+        right_analyser.fftSize = 256;
+
+        // Initializes source node to play the audio
+        source = context.createBufferSource();
+        source.buffer = buffer;
+        source.loop = false;
+
+        // Creates a splitter node to process multiple channels of audio
+        splitter = context.createChannelSplitter(2);
+
+        // Splits audio data into 2 channels
+        source.connect(splitter);
+
+        // Each channel is connected to its own analyzer
+        splitter.connect(left_analyser, 0);
+        splitter.connect(right_analyser, 1);
+
+        // Each analyzer is connected to the script node to receive data
+        left_analyser.connect(scriptNode);
+        right_analyser.connect(scriptNode);
+
+        // The source is connected to the audio file
+        source.connect(context.destination);
+
+        /*
+           Here is where the magic happens. We can now pull in frequency data from
+           both channels and do stuff with these arrays. Each array contains the
+           magnitudes of the coefficients of the first 256 frequency components of the
+           size 512 DFT. The remaining 256 components are just the reverse of the computed
+           coefficients, as they form complex conjagates with the first 256 coefficients
+           (same magnitude).
+        */
+
+        scriptNode.onaudioprocess = function(e) {
+            left_freqs = new Uint8Array(left_analyser.frequencyBinCount);
+            right_freqs = new Uint8Array(right_analyser.frequencyBinCount);
+            left_analyser.getByteFrequencyData(left_freqs);
+            right_analyser.getByteFrequencyData(right_freqs);
+            // var left_volume = getAverageVolume(left_freqs);
+            // var right_volume = getAverageVolume(right_freqs);
+
+            // vol_ctx.clearRect(30, 0, 130, 200);
+            // left_ctx.clearRect(0, 0, 512, 600);
+            // var gradient_l = left_ctx.createLinearGradient(0,0,0,512);
+            // gradient_l.addColorStop(1,'#000000');
+            // gradient_l.addColorStop(0.3,'#ff0000');
+            // gradient_l.addColorStop(0.7,'#ffff00');
+            // gradient_l.addColorStop(0,'#ffff00');
+            //
+            //
+            // left_freqs = left_freqs.reverse();
+            // left_ctx.fillStyle = gradient_l;
+            // for (var i = 0; i < left_freqs.length; i++){
+            //     var value = left_freqs[i];
+            //     left_ctx.fillRect(40 + i * 2, 512 - (2 * value), 1, (2 * value));
+            // }
+            // vol_ctx.fillStyle = gradient_l;
+            // vol_ctx.fillRect(30, 200 - left_volume, 50, 200);
+            //
+            // right_ctx.clearRect(0, 0, 512, 600);
+            // var gradient_r = right_ctx.createLinearGradient(0,0,0,512);
+            // gradient_r.addColorStop(1,'#000000');
+            // gradient_r.addColorStop(0.3,'#0000ff');
+            // gradient_r.addColorStop(0.7,'#00ff00');
+            // gradient_r.addColorStop(0,'#00ff00');
+            // right_ctx.fillStyle = gradient_r;
+            // for (var i = 0; i < right_freqs.length; i++){
+            //     var value = right_freqs[i];
+            //     right_ctx.fillRect(i * 2, 512 - (2 * value), 1, (2 * value));
+            // }
+            // vol_ctx.fillStyle = gradient_r;
+            // vol_ctx.fillRect(80, 200 - right_volume, 50, 200);
+        };
+
+        var offset = pausedAt;
+        startedAt = context.currentTime - offset;
+        pausedAt = 0;
+        playing = true;
+        source.start(0, offset);
+    }
+
+    function getAverageVolume(array) {
+        var total_freq = 0;
+
+        for (var i = 0; i < array.length; ++i) {
+            total_freq += array[i];
+        }
+
+        return total_freq / array.length;
+    }
+
+    var pause = function() {
+        var elapsed = context.currentTime - startedAt;
+        stop();
+        pausedAt = elapsed;
+    };
+
+    var stop = function() {
+        if (source) {
+            if (scriptNode) {
+                scriptNode.disconnect(context.destination);
+            }
+            source.disconnect();
+            source.stop(0);
+            source = null;
+        }
+        pausedAt = 0;
+        startedAt = 0;
+        playing = false;
+    };
+
+    var getPlaying = function() {
+        return playing;
+    };
+
+    var getCurrentTime = function() {
+        if(pausedAt) {
+            return pausedAt;
+        }
+        if(startedAt) {
+            return context.currentTime - startedAt;
+        }
+        return 0;
+    };
+
+    var getDuration = function() {
+      return buffer.duration;
+    };
+
+    return {
+        getCurrentTime: getCurrentTime,
+        getDuration: getDuration,
+        getPlaying: getPlaying,
+        play: play,
+        pause: pause,
+        stop: stop
+    };
+}
+
+function init(buffer) {
+    var graph = createAudioGraph(buffer, context);
+    var play = document.querySelector('[data-js="play"]'),
+        stop = document.querySelector('[data-js="stop"]'),
+        info = document.querySelector('[data-js="info"]');
+    play.addEventListener('click', function() {
+        if (graph.getPlaying()) {
+            graph.pause();
+            play.innerHTML = 'play';
+        } else {
+            graph.play();
+            play.innerHTML = 'pause';
+        }
+    });
+    stop.addEventListener('click', function() {
+        graph.stop();
+        play.innerHTML = 'play';
+    });
+};
+
+function error(e){
+    console.error('ERROR: context.decodeAudioData:', e);
+}
+
+load(url);
+
 </script>
 <!-- vertex shader -->
 <script id="2d-vertex-shader" type="x-shader/x-vertex">
@@ -513,8 +676,84 @@ void main() {
 </script>
 </head>
 <body>
+    <style>
+        html, body, div, span, applet, object, iframe,
+        h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+        a, abbr, acronym, address, big, cite, code,
+        del, dfn, em, img, ins, kbd, q, s, samp,
+        small, strike, strong, sub, sup, tt, var,
+        b, u, i, center,
+        dl, dt, dd, ol, ul, li,
+        fieldset, form, label, legend,
+        table, caption, tbody, tfoot, thead, tr, th, td,
+        article, aside, canvas, details, embed,
+        figure, figcaption, footer, header, hgroup,
+        menu, nav, output, ruby, section, summary,
+        time, mark, audio, video {
+        margin: 0;
+        padding: 0;
+        border: 0;
+        font-size: 100%;
+        font: inherit;
+        vertical-align: baseline;
+        }
+        /* HTML5 display-role reset for older browsers */
+        article, aside, details, figcaption, figure,
+        footer, header, hgroup, menu, nav, section {
+        display: block;
+        }
+        body {
+        line-height: 1;
+        }
+        ol, ul {
+        list-style: none;
+        }
+        blockquote, q {
+        quotes: none;
+        }
+        blockquote:before, blockquote:after,
+        q:before, q:after {
+        content: '';
+        content: none;
+        }
+        table {
+        border-collapse: collapse;
+        border-spacing: 0;
+        }
+
+        html, body {
+            height:100%;
+            width:100%;
+        }
+
+        html {
+            box-sizing: border-box;
+        }
+
+        *, *:before, *:after {
+            box-sizing: inherit;
+        }
+        .menu {
+            position:absolute;
+            left: calc(50% - 50px);
+            top: 30px;
+        }
+
+        button {
+            width: 50px;
+        }
+
+        .containerDiv .leftPanel {
+            width:100%;
+            height:100%;
+        }
+    </style>
+    <div class="menu">
+        <button data-js="play">play</button>
+        <button data-js="stop">stop</button>
+    </div>
     <div class="containerDiv">
-        <div class="leftPanel"> <canvas id="canvas" width="900" height="600"></canvas> </div>
+        <div class="leftPanel" > <canvas id="canvas"></canvas> </div>
         <div class="rightPanel" style="display:none">
           <h3>Particle Settings</h3>
 
