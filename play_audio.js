@@ -77,7 +77,7 @@ function createAudioGraph(buffer, context) {
             right_freqs = new Uint8Array(right_analyser.frequencyBinCount);
             left_analyser.getByteFrequencyData(left_freqs);
             right_analyser.getByteFrequencyData(right_freqs);
-            /*var left_volume = getAverageVolume(left_freqs);
+            var left_volume = getAverageVolume(left_freqs);
             var right_volume = getAverageVolume(right_freqs);
 
             vol_ctx.clearRect(30, 0, 130, 200);
@@ -110,7 +110,7 @@ function createAudioGraph(buffer, context) {
                 right_ctx.fillRect(i * 2, 512 - (2 * value), 1, (2 * value));
             }
             vol_ctx.fillStyle = gradient_r;
-            vol_ctx.fillRect(80, 200 - right_volume, 50, 200);*/
+            vol_ctx.fillRect(80, 200 - right_volume, 50, 200);
         };
 
         var offset = pausedAt;
