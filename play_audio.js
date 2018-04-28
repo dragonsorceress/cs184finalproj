@@ -1,10 +1,10 @@
 var options = {
-  // this option is not actually in the UI
   fireEmitPositionSpread: {x:1,y:0},
   fireSpeed: 800.0,
   fireSpeedVariance: 80.0,
   fireDeathSpeed: 800.0,
 };
+window.onload = setupWebGL
 
 textureList = ["rectangle.png","circle.png","gradient.png","thicker_gradient.png","explosion.png","flame.png","smilie.png","heart.png"];
 images = [];
@@ -126,20 +126,6 @@ function animloop(frequencies, left_vol, right_vol) {
   render();
 }
 
-// frameTime = 18;
-// lastTime = time();
-// lastFPSDivUpdate = time();
-// function timing() {
-//   currentTime = time();
-//   frameTime = frameTime * 0.9 + (currentTime - lastTime) * 0.1;
-//   fps = 1000.0/frameTime;
-//   if (currentTime - lastFPSDivUpdate > 100) {
-//     document.getElementById("fps").innerHTML = "FPS: " + Math.round(fps);
-//     lastFPSDivUpdate = currentTime;
-//   }
-//   lastTime = currentTime;
-// }
-
 function time() {
   var d = new Date();
   var n = d.getTime();
@@ -157,7 +143,6 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
   var currentParticleTime = time();
   var timeDifference = currentParticleTime - lastParticleTime;
 
-  // we don't want to generate a ton of particles if the browser was minimized or something
   if (timeDifference > 100)
     timeDifference = 100;
 
@@ -191,13 +176,7 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
     particleDiscrepancy -= 1.0;
   }
 
-  // particleAverage = {x:0,y:0};
   var numParts = fireParticles.length;
-  // for (var i = 0; i < numParts; i++) {
-  //   particleAverage.x += fireParticles[i].pos.x/numParts;
-  //   particleAverage.y += fireParticles[i].pos.y/numParts;
-  // }
-
   for (var i = 0; i < fireParticles.length; i++) {
     var x = fireParticles[i].pos.x;
     var y = fireParticles[i].pos.y;
@@ -206,20 +185,37 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
     fireParticles[i].pos = addVecs(fireParticles[i].pos,scaleVec(fireParticles[i].vel,timeDifference/1000.0));
     var scale_volume = fireParticles[i].left ? left_vol : right_vol;
     fireParticles[i].color.a -= options.fireDeathSpeed / scale_volume / fireParticles[i].mag;
-    // fireParticles[i].color.g *= 0.8;
-    // fireParticles[i].color.b *= 0.8;
-    // console.log(fireParticles[i].color.a);
 
-    if (fireParticles[i].pos.y <= canvas.height - canvas.height*(fireParticles[i].mag/256) || fireParticles[i].color.a <= 0)
+    if (fireParticles[i].pos.y <= canvas.height - canvas.height*(fireParticles[i].mag/256) || fireParticles[i].color.a <= 0) {
       markForDeletion(fireParticles,i);
-
+    }
   }
   fireParticles = deleteMarked(fireParticles);
 
   document.getElementById("numParticles").innerHTML = "# particles: " + (fireParticles.length + sparkParticles.length);
+}
 
-  // lastParticleTime = currentParticleTime;
 
+function dieOut() {
+    while (fireParticles.length > 0) {
+        for (var i = 0; i < fireParticles.length; i++) {
+            var x = fireParticles[i].pos.x;
+            var y = fireParticles[i].pos.y;
+
+            // move the particle
+            fireParticles[i].pos = addVecs(fireParticles[i].pos,scaleVec(fireParticles[i].vel, 1/10));
+            var scale_volume = fireParticles[i].volume
+            fireParticles[i].color.a -= options.fireDeathSpeed / scale_volume / fireParticles[i].mag;
+            if (fireParticles[i].pos.y <= canvas.height - canvas.height*(fireParticles[i].mag/256) || fireParticles[i].color.a <= 0) {
+              markForDeletion(fireParticles,i);
+            }
+        }
+        fireParticles = deleteMarked(fireParticles);
+        setTimeout(function(){
+                    gl.clear(gl.COLOR_BUFFER_BIT);
+                    drawRects(fireParticles);
+                   }, 100);
+    }
 }
 
 function render() {
@@ -299,7 +295,7 @@ function drawRects(rects,textureIndex) {
 
 // AUDIO CODE STARTS HERE
 
-var url = 'rough_soul_remix.mp3';
+var url = 'jazz.mp3';
 var context = new AudioContext();
 var left_freqs = new Array();
 var right_freqs = new Array();
@@ -320,12 +316,6 @@ function createAudioGraph(buffer, context) {
         pausedAt = 0,
         playing = false,
         scriptNode = null;
-    // var left_canvas = document.getElementById("left");
-    // var right_canvas = document.getElementById("right");
-    // var left_ctx = left_canvas.getContext("2d");
-    // var right_ctx = right_canvas.getContext("2d");
-    // var volume_canvas = document.getElementById("volume");
-    // var vol_ctx = volume_canvas.getContext("2d");
     var play = function() {
         // Initializes node to stream in audio data in chunks
         scriptNode = context.createScriptProcessor(2048, 2, 2);
@@ -423,6 +413,7 @@ function createAudioGraph(buffer, context) {
         pausedAt = 0;
         startedAt = 0;
         playing = false;
+        dieOut();
     };
     var getPlaying = function() {
         return playing;
@@ -450,8 +441,7 @@ function createAudioGraph(buffer, context) {
 }
 
 function init(buffer) {
-
-    setupWebGL()
+    //setupWebGL()
     var graph = createAudioGraph(buffer, context);
     var play = document.querySelector('[data-js="play"]'),
         stop = document.querySelector('[data-js="stop"]'),
