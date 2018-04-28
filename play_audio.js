@@ -3,7 +3,7 @@ var options = {
   fireEmitPositionSpread: {x:1,y:0},
   fireSpeed: 800.0,
   fireSpeedVariance: 80.0,
-  fireDeathSpeed: 0.003,
+  fireDeathSpeed: 800.0,
 };
 
 textureList = ["rectangle.png","circle.png","gradient.png","thicker_gradient.png","explosion.png","flame.png","smilie.png","heart.png"];
@@ -64,11 +64,12 @@ function createFireParticle(emitCenter, mag, volume, left) {
     var particle = {
         pos: random2DVec(emitCenter,options.fireEmitPositionSpread),
         vel: scaleVec(randomUnitVec(Math.PI/2, 0),speed),
-        size: {width: (mag/256) * 20,
-               height: (mag/256) * 20},
+        size: {width: (mag/256) * 40,
+               height: (mag/256) * 40},
         color: color,
         mag: mag,
-        vol: volume
+        vol: volume,
+        left: left
       };
     fireParticles.push(particle);
 }
@@ -125,19 +126,19 @@ function animloop(frequencies, left_vol, right_vol) {
   render();
 }
 
-frameTime = 18;
-lastTime = time();
-lastFPSDivUpdate = time();
-function timing() {
-  currentTime = time();
-  frameTime = frameTime * 0.9 + (currentTime - lastTime) * 0.1;
-  fps = 1000.0/frameTime;
-  if (currentTime - lastFPSDivUpdate > 100) {
-    document.getElementById("fps").innerHTML = "FPS: " + Math.round(fps);
-    lastFPSDivUpdate = currentTime;
-  }
-  lastTime = currentTime;
-}
+// frameTime = 18;
+// lastTime = time();
+// lastFPSDivUpdate = time();
+// function timing() {
+//   currentTime = time();
+//   frameTime = frameTime * 0.9 + (currentTime - lastTime) * 0.1;
+//   fps = 1000.0/frameTime;
+//   if (currentTime - lastFPSDivUpdate > 100) {
+//     document.getElementById("fps").innerHTML = "FPS: " + Math.round(fps);
+//     lastFPSDivUpdate = currentTime;
+//   }
+//   lastTime = currentTime;
+// }
 
 function time() {
   var d = new Date();
@@ -164,8 +165,8 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
   var left_bins = [];
   var right_bins = [];
   particleDiscrepancy += 256*(timeDifference)/1000.0;
-  for (var i = 0; i < frequencies.length; i+=8) {  
-    var magnitude = 0;  
+  for (var i = 0; i < frequencies.length; i+=8) {
+    var magnitude = 0;
     for (var j = 0; j < 8; j++) {
       magnitude += frequencies[i+j];
     }
@@ -190,12 +191,12 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
     particleDiscrepancy -= 1.0;
   }
 
-  particleAverage = {x:0,y:0};
+  // particleAverage = {x:0,y:0};
   var numParts = fireParticles.length;
-  for (var i = 0; i < numParts; i++) {
-    particleAverage.x += fireParticles[i].pos.x/numParts;
-    particleAverage.y += fireParticles[i].pos.y/numParts;
-  }
+  // for (var i = 0; i < numParts; i++) {
+  //   particleAverage.x += fireParticles[i].pos.x/numParts;
+  //   particleAverage.y += fireParticles[i].pos.y/numParts;
+  // }
 
   for (var i = 0; i < fireParticles.length; i++) {
     var x = fireParticles[i].pos.x;
@@ -203,16 +204,21 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
 
     // move the particle
     fireParticles[i].pos = addVecs(fireParticles[i].pos,scaleVec(fireParticles[i].vel,timeDifference/1000.0));
-    //fireParticles[i].color.a -= options.fireDeathSpeed+Math.abs(particleAverage.x-fireParticles[i].pos.x)*options.fireTriangleness;
+    var scale_volume = fireParticles[i].left ? left_vol : right_vol;
+    fireParticles[i].color.a -= options.fireDeathSpeed / scale_volume / fireParticles[i].mag;
+    // fireParticles[i].color.g *= 0.8;
+    // fireParticles[i].color.b *= 0.8;
+    // console.log(fireParticles[i].color.a);
 
-    if (fireParticles[i].pos.y <= canvas.height - canvas.height*(fireParticles[i].mag/256))
+    if (fireParticles[i].pos.y <= canvas.height - canvas.height*(fireParticles[i].mag/256) || fireParticles[i].color.a <= 0)
       markForDeletion(fireParticles,i);
+
   }
   fireParticles = deleteMarked(fireParticles);
 
   document.getElementById("numParticles").innerHTML = "# particles: " + (fireParticles.length + sparkParticles.length);
 
-  lastParticleTime = currentParticleTime;
+  // lastParticleTime = currentParticleTime;
 
 }
 
@@ -293,7 +299,7 @@ function drawRects(rects,textureIndex) {
 
 // AUDIO CODE STARTS HERE
 
-var url = 'such_great_heights.mp3';
+var url = 'rough_soul_remix.mp3';
 var context = new AudioContext();
 var left_freqs = new Array();
 var right_freqs = new Array();
