@@ -1,68 +1,9 @@
 var options = {
   // this option is not actually in the UI
   fireEmitPositionSpread: {x:1,y:0},
-
-  fireEmitRate: 256,
-  fireEmitRateSlider: {min:1,max:5000},
-
-  fireSize: 10.0,
-  fireSizeSlider: {min:2.0,max:100.0},
-
-  fireSizeVariance:  100.0,
-  fireSizeVarianceSlider: {min:0.0,max:100.0},
-
-  fireEmitAngleVariance: 0,
-  fireEmitAngleVarianceSlider: {min:0.0,max:Math.PI/2},
-
-  fireSpeed: 500.0,
-  fireSpeedSlider: {min:20.0,max:500},
-
+  fireSpeed: 800.0,
   fireSpeedVariance: 80.0,
-  fireSpeedVarianceSlider: {min:0.0,max:100.0},
-
   fireDeathSpeed: 0.003,
-  fireDeathSpeedSlider: {min: 0.001, max: 0.05},
-
-  fireTriangleness: 0.000,
-  fireTrianglenessSlider: {min:0.0, max:0.0003},
-
-  fireTextureHue: 25.0,
-  fireTextureHueSlider: {min:-180,max:180},
-
-  fireTextureHueVariance: 15.0,
-  fireTextureHueVarianceSlider: {min:0.0,max:180},
-
-  fireTextureColorize: true,
-  wind: false,
-  omnidirectionalWind:false,
-
-  windStrength:0.0,
-  windStrengthSlider:{min:0.0,max:60.0},
-
-  windTurbulance:0.000,
-  windTurbulanceSlider:{min:0.0,max:0.001},
-
-  sparks: true,
-
-  // some of these options for sparks are not actually available in the UI to save UI space
-  sparkEmitRate: 6.0,
-  sparkEmitSlider: {min:0.0,max:10.0},
-
-  sparkSize: 10.0,
-  sparkSizeSlider: {min:5.0,max:100.0},
-
-  sparkSizeVariance: 20.0,
-  sparkSizeVarianceSlider: {min:0.0,max:100.0},
-
-  sparkSpeed: 400.0,
-  sparkSpeedSlider: {min:20.0, max:700.0},
-
-  sparkSpeedVariance: 80.0,
-  sparkSpeedVarianceSlider: {min:0.0, max:100.0},
-
-  sparkDeathSpeed: 0.0085,
-  sparkDeathSpeedSlider: {min: 0.002, max: 0.05},
-
 };
 
 textureList = ["rectangle.png","circle.png","gradient.png","thicker_gradient.png","explosion.png","flame.png","smilie.png","heart.png"];
@@ -90,8 +31,6 @@ function handleTextureLoaded(image,index,textureName) {
   // load the next texture
   if (index < textureList.length-1)
     loadTexture("textures/" + textureList[index+1],index+1);
-  //texturesLoadedCount += 1;
-
 }
 
 function loadAllTextures() {
@@ -114,29 +53,24 @@ fireParticles = [];
 sparkParticles = [];
 
 function createFireParticle(emitCenter, mag, volume, left) {
-  var size = randomSpread(options.fireSize,options.fireSize*(options.fireSizeVariance/100.0));
-  var speed = randomSpread(options.fireSpeed,options.fireSpeed*options.fireSpeedVariance/100.0);
-  var color = {};
-  if (!options.fireTextureColorize)
-    color = {r:1.0,g:1.0,b:1.0,a:0.5};
-  else {
+    var speed = randomSpread(options.fireSpeed,options.fireSpeed*options.fireSpeedVariance/100.0);
+    var color = {};
     if (left)
-      var hue = randomSpread(-180 + (mag/volume)*180 ,options.fireTextureHueVariance);
+      var hue = randomSpread(-180 + (mag/volume)*180, 16);
     else
-      var hue = randomSpread((mag/volume)*180 ,options.fireTextureHueVariance);
+      var hue = randomSpread(180 - (mag/volume)*180, 16);
     color = HSVtoRGB(convertHue(hue),1.0,1.0);
     color.a = 0.5;
-  }
-  var particle = {
-    pos: random2DVec(emitCenter,options.fireEmitPositionSpread),
-    vel: scaleVec(randomUnitVec(Math.PI/2,options.fireEmitAngleVariance),speed),
-    size: {width: (mag/256) * 20,
-           height: (mag/256) * 20},
-    color: color,
-    mag: mag,
-    vol: volume
-  };
-  fireParticles.push(particle);
+    var particle = {
+        pos: random2DVec(emitCenter,options.fireEmitPositionSpread),
+        vel: scaleVec(randomUnitVec(Math.PI/2, 0),speed),
+        size: {width: (mag/256) * 20,
+               height: (mag/256) * 20},
+        color: color,
+        mag: mag,
+        vol: volume
+      };
+    fireParticles.push(particle);
 }
 
 // initialze the scene
@@ -229,7 +163,7 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
   // update fire particles
   var left_bins = [];
   var right_bins = [];
-  particleDiscrepancy += options.fireEmitRate*(timeDifference)/1000.0;
+  particleDiscrepancy += 256*(timeDifference)/1000.0;
   for (var i = 0; i < frequencies.length; i+=8) {  
     var magnitude = 0;  
     for (var j = 0; j < 8; j++) {
@@ -269,8 +203,6 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
 
     // move the particle
     fireParticles[i].pos = addVecs(fireParticles[i].pos,scaleVec(fireParticles[i].vel,timeDifference/1000.0));
-
-
     //fireParticles[i].color.a -= options.fireDeathSpeed+Math.abs(particleAverage.x-fireParticles[i].pos.x)*options.fireTriangleness;
 
     if (fireParticles[i].pos.y <= canvas.height - canvas.height*(fireParticles[i].mag/256))
@@ -289,8 +221,6 @@ function render() {
   gl.uniform2f(resolutionLocation, canvas.width, canvas.height);
   gl.uniform1i(textureSamplerLocation, 0);
   drawRects(fireParticles);
-  if (options.sparks)
-      drawRects(sparkParticles);
 }
 
 rectArray = [];
@@ -452,39 +382,7 @@ function createAudioGraph(buffer, context) {
             for (var i = left_freqs.length; i < merged_freqs.length; i++) {
               merged_freqs[i] = right_freqs[i-left_freqs.length];
             }
-
             animloop(merged_freqs, left_volume, right_volume);
-            // vol_ctx.clearRect(30, 0, 130, 200);
-            // left_ctx.clearRect(0, 0, 512, 600);
-            // var gradient_l = left_ctx.createLinearGradient(0,0,0,512);
-            // gradient_l.addColorStop(1,'#000000');
-            // gradient_l.addColorStop(0.3,'#ff0000');
-            // gradient_l.addColorStop(0.7,'#ffff00');
-            // gradient_l.addColorStop(0,'#ffff00');
-            //
-            //
-            // left_freqs = left_freqs.reverse();
-            // left_ctx.fillStyle = gradient_l;
-            // for (var i = 0; i < left_freqs.length; i++){
-            //     var value = left_freqs[i];
-            //     left_ctx.fillRect(40 + i * 2, 512 - (2 * value), 1, (2 * value));
-            // }
-            // vol_ctx.fillStyle = gradient_l;
-            // vol_ctx.fillRect(30, 200 - left_volume, 50, 200);
-            //
-            // right_ctx.clearRect(0, 0, 512, 600);
-            // var gradient_r = right_ctx.createLinearGradient(0,0,0,512);
-            // gradient_r.addColorStop(1,'#000000');
-            // gradient_r.addColorStop(0.3,'#0000ff');
-            // gradient_r.addColorStop(0.7,'#00ff00');
-            // gradient_r.addColorStop(0,'#00ff00');
-            // right_ctx.fillStyle = gradient_r;
-            // for (var i = 0; i < right_freqs.length; i++){
-            //     var value = right_freqs[i];
-            //     right_ctx.fillRect(i * 2, 512 - (2 * value), 1, (2 * value));
-            // }
-            // vol_ctx.fillStyle = gradient_r;
-            // vol_ctx.fillRect(80, 200 - right_volume, 50, 200);
         };
 
         var offset = pausedAt;
