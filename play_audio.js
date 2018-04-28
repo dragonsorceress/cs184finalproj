@@ -121,9 +121,9 @@ function createFireParticle(emitCenter, mag, volume, left) {
     color = {r:1.0,g:1.0,b:1.0,a:0.5};
   else {
     if (left)
-      var hue = randomSpread(-180 + (mag/256)*180 ,options.fireTextureHueVariance);
+      var hue = randomSpread(-180 + (mag/volume)*180 ,options.fireTextureHueVariance);
     else
-      var hue = randomSpread((mag/256)*180 ,options.fireTextureHueVariance);
+      var hue = randomSpread((mag/volume)*180 ,options.fireTextureHueVariance);
     color = HSVtoRGB(convertHue(hue),1.0,1.0);
     color.a = 0.5;
   }
@@ -139,7 +139,6 @@ function createFireParticle(emitCenter, mag, volume, left) {
   fireParticles.push(particle);
 }
 
-
 // initialze the scene
 function setupWebGL() {
   // Get A WebGL context
@@ -153,7 +152,6 @@ function setupWebGL() {
 
   loadAllTextures();
 
-
   var tex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D, tex);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE,
@@ -165,13 +163,10 @@ function setupWebGL() {
   colorBuffer = gl.createBuffer();
   squareTextureCoordinateVertices = gl.createBuffer();
 
-  // setup GLSL program
   vertexShader = createShaderFromScriptElement(gl, "2d-vertex-shader");
   fragmentShader = createShaderFromScriptElement(gl, "2d-fragment-shader");
   program = createProgram(gl, [vertexShader, fragmentShader]);
   gl.useProgram(program);
-
-  // look up where the vertex data needs to go.
   positionAttrib = gl.getAttribLocation(program, "a_position");
   gl.enableVertexAttribArray(positionAttrib);
   colorAttrib = gl.getAttribLocation(program, "a_color");
@@ -179,36 +174,23 @@ function setupWebGL() {
   textureCoordAttribute = gl.getAttribLocation(program, "a_texture_coord");
   gl.enableVertexAttribArray(textureCoordAttribute);
 
-
-  // lookup uniforms
   resolutionLocation = gl.getUniformLocation(program, "u_resolution");
   cameraLocation = gl.getUniformLocation(program, "cam_position");
   textureSamplerLocation = gl.getUniformLocation(program, "u_sampler")
-
-  // setup UI
-
-  // setupSlidepmousemove = handleMouseMove;
 
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
   gl.enable(gl.BLEND);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); //Prevents s-coordinate wrapping (repeating).
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); //Prevents t-coordinate wrapping (repeating).
-
   gl.clear(gl.COLOR_BUFFER_BIT);
-  //animloop();
-
 }
 
-// main program loop
 function animloop(frequencies, left_vol, right_vol) {
-  //requestAnimFrame(animloop);
-  //timing();
   computeNewPositions(frequencies, left_vol, right_vol);
   render();
 }
 
-// the timing function's only job is to calculate the framerate
 frameTime = 18;
 lastTime = time();
 lastFPSDivUpdate = time();
@@ -221,11 +203,6 @@ function timing() {
     lastFPSDivUpdate = currentTime;
   }
   lastTime = currentTime;
-}
-
-
-function keyCodePressed(charVal) {
-  return currentlyPressedKeys[charVal.charCodeAt(0)];
 }
 
 function time() {
@@ -328,7 +305,6 @@ function concat_inplace(index,arr1,arr2) {
   return index;
 }
 
-
 function drawRects(rects,textureIndex) {
   var index = 0;
   var colorIndex = 0;
@@ -402,8 +378,6 @@ function load(url) {
     request.send();
 }
 
-
-var count = 0;
 function createAudioGraph(buffer, context) {
     var source = null
         startedAt = 0,
@@ -466,7 +440,6 @@ function createAudioGraph(buffer, context) {
         scriptNode.onaudioprocess = function(e) {
             left_freqs = new Uint8Array(left_analyser.frequencyBinCount);
             right_freqs = new Uint8Array(right_analyser.frequencyBinCount);
-            count++;
             left_analyser.getByteFrequencyData(left_freqs);
             right_analyser.getByteFrequencyData(right_freqs);
             var left_volume = getAverageVolume(left_freqs);
@@ -479,8 +452,8 @@ function createAudioGraph(buffer, context) {
             for (var i = left_freqs.length; i < merged_freqs.length; i++) {
               merged_freqs[i] = right_freqs[i-left_freqs.length];
             }
-            if (count%2 == 0) 
-              animloop(merged_freqs, left_volume, right_volume);
+
+            animloop(merged_freqs, left_volume, right_volume);
             // vol_ctx.clearRect(30, 0, 130, 200);
             // left_ctx.clearRect(0, 0, 512, 600);
             // var gradient_l = left_ctx.createLinearGradient(0,0,0,512);
