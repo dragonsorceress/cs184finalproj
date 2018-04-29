@@ -299,7 +299,7 @@ function drawRects(rects,textureIndex) {
 
 // AUDIO CODE STARTS HERE
 
-var url = 'rough_soul_remix.mp3';
+var url = 'go_up.mp3';
 var context = new AudioContext();
 var left_freqs = new Array();
 var right_freqs = new Array();
