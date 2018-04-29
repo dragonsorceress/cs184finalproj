@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - materials</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+				background-color: #000;
+				margin: 0px;
+				overflow: hidden;
+			}
+		</style>
+	</head>
+	<body>
+        <style>
+            html, body, div, span, applet, object, iframe,
+            h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+            a, abbr, acronym, address, big, cite, code,
+            del, dfn, em, img, ins, kbd, q, s, samp,
+            small, strike, strong, sub, sup, tt, var,
+            b, u, i, center,
+            dl, dt, dd, ol, ul, li,
+            fieldset, form, label, legend,
+            table, caption, tbody, tfoot, thead, tr, th, td,
+            article, aside, canvas, details, embed,
+            figure, figcaption, footer, header, hgroup,
+            menu, nav, output, ruby, section, summary,
+            time, mark, audio, video {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            font-size: 100%;
+            font: inherit;
+            vertical-align: baseline;
+            }
+            /* HTML5 display-role reset for older browsers */
+            article, aside, details, figcaption, figure,
+            footer, header, hgroup, menu, nav, section {
+            display: block;
+            }
+            body {
+            line-height: 1;
+            }
+            ol, ul {
+            list-style: none;
+            }
+            blockquote, q {
+            quotes: none;
+            }
+            blockquote:before, blockquote:after,
+            q:before, q:after {
+            content: '';
+            content: none;
+            }
+            table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            }
+
+            html, body {
+                height:100%;
+                width:100%;
+            }
+
+            html {
+                box-sizing: border-box;
+            }
+
+            *, *:before, *:after {
+                box-sizing: inherit;
+            }
+
+            .menu {
+                position:absolute;
+                left: calc(50% - 50px);
+                top: 30px;
+            }
+
+            button {
+                width: 50px;
+            }
+        </style>
+		<script src="common/lib/three.min.js"></script>
+        <script src="common/lib/CopyShader.js"></script>
+        <script src="common/lib/ConvolutionShader.js"></script>
+        <script src="common/lib/EffectComposer.js"></script>
+		<script src="common/lib/RenderPass.js"></script>
+		<script src="common/lib/ShaderPass.js"></script>
+        <script src="common/lib/BloomPass.js"></script>
+        <script src="common/lib/ShaderExtras.js"></script>
+        <!-- <script type="text/javascript" src="shaders/sphere_bump.frag"></script>
+        <script type="text/javascript" src="shaders/sphere_bump.vert"></script> -->
+
+		<!-- <script src="js/Detector.js"></script>
+		<script src="js/libs/stats.min.js"></script> -->
+        <div class="menu">
+            <button data-js="play">play</button>
+            <button data-js="stop">stop</button>
+        </div>
+
+		<script>
+            var container;
+            var camera, scene, renderer;
+            var composer;
+            var lights = [];
+            var pointLight;
+            var sphere;
+
+            var url = 'go_up.mp3';
+            // var graph;
+            var context = new AudioContext();
+            var freqs = new Array();
+
+            init();
+            load_music(url);
+            // animate();
+
+            function init_music(buffer) {
+                // Audio Stuff
+                var graph = createAudioGraph(buffer, context);
+                var play = document.querySelector('[data-js="play"]'),
+                    stop = document.querySelector('[data-js="stop"]'),
+                    info = document.querySelector('[data-js="info"]');
+                play.addEventListener('click', function() {
+                    if (graph.getPlaying()) {
+                        graph.pause();
+                        play.innerHTML = 'play';
+                    } else {
+                        graph.play();
+                        play.innerHTML = 'pause';
+                    }
+                });
+                stop.addEventListener('click', function() {
+                    graph.stop();
+                    play.innerHTML = 'play';
+                });
+            }
+            function init() {
+
+
+                scene = new THREE.Scene();
+
+                container = document.createElement( 'div' );
+                document.body.appendChild( container );
+                camera = new THREE.PerspectiveCamera( 35, window.innerWidth / window.innerHeight, 1, 10000 );
+                camera.position.set( 0, 0, 5 );
+
+
+                // Grid
+                var helper = new THREE.GridHelper( 1000, 40, 0x303030, 0x303030 );
+                helper.position.y = -70;
+                scene.add( helper );
+
+                // Materials
+                var material  = new THREE.MeshLambertMaterial({color: 0xffffff});
+
+                // Spheres geometry
+                var geometry = new THREE.SphereGeometry( 1, 12, 12 );
+                sphere = addMesh( geometry, material);
+                // console.log(geometry.vertices);
+                sphere.geometry.initialVertices = [];
+                for (var i = 0; i < sphere.geometry.vertices.length; i++) {
+                    sphere.geometry.initialVertices.push(sphere.geometry.vertices[i].clone());
+                }
+
+				// Lights
+
+                var ambientColor = (0.15) * 0xffffff;
+                var light = new THREE.AmbientLight( ambientColor );
+                scene.add( light );
+                lights.push(light);
+
+                var light4 = new THREE.DirectionalLight( ambientColor );
+                light4.position.set( 0.0, 0.0, 1.0 ).normalize().multiplyScalar(1.2);
+                // light4.add( new THREE.Mesh( new THREE.SphereGeometry( 0.03, 8, 8 ), new THREE.MeshBasicMaterial( { color: ambientColor } ) ) );
+                scene.add( light4 );
+                lights.push(light4);
+
+                var light5 = new THREE.PointLight( 0xff0000 );
+                light5.position.set( 1.0, 0.0, 0.0 ).normalize().multiplyScalar(1.2);
+                // light5.add( new THREE.Mesh( new THREE.SphereGeometry( 0.03, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) ) );
+                scene.add( light5 );
+                lights.push(light5);
+
+                renderer = new THREE.WebGLRenderer( { antialias: true } );
+                renderer.setPixelRatio( window.devicePixelRatio );
+                renderer.setSize( window.innerWidth, window.innerHeight );
+                container.appendChild( renderer.domElement );
+                window.addEventListener( 'resize', onWindowResize, false );
+
+                composer = new THREE.EffectComposer(renderer);
+                renderer.autoClear = false;
+
+                var renderModel = new THREE.RenderPass(scene, camera);
+                composer.addPass(renderModel);
+
+                var effectBloom = new THREE.BloomPass(0.8);
+                composer.addPass(effectBloom);
+
+                var effectScreen= new THREE.ShaderPass(THREE.ShaderExtras[ "screen" ]);
+                effectScreen.renderToScreen = true;
+                composer.addPass(effectScreen);
+
+
+            }
+            function addMesh( geometry, material ) {
+                var mesh = new THREE.Mesh( geometry, material );
+                mesh.position.y = 0.2;
+                mesh.rotation.x = Math.PI;
+                scene.add( mesh );
+                return mesh
+            }
+            function onWindowResize() {
+            	camera.aspect = window.innerWidth / window.innerHeight;
+            	camera.updateProjectionMatrix();
+            	renderer.setSize( window.innerWidth, window.innerHeight );
+            }
+            // function animate() {
+            // 	requestAnimationFrame( animate );
+            // 	render();
+            // }
+            function render(freqs, volume) {
+                // var timer = 0.0001 * Date.now();
+                // console.log(freqs.length);
+                // console.log(sphere.geometry.vertices.length);
+                var spectrum = freqs.slice(4, freqs.length);
+                for ( var i = 0 ; i < sphere.geometry.vertices.length; i ++ ) {
+                    if (i < spectrum.length) {
+                        var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(Math.max(spectrum[i] / 255, 0.2));
+                        sphere.geometry.vertices[i].multiplyScalar(0.0);
+                        sphere.geometry.vertices[i].add(temp);
+                    }
+                    else {
+                        var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(0.2);
+                        sphere.geometry.vertices[i].multiplyScalar(0.0);
+                        sphere.geometry.vertices[i].add(temp);
+                    }
+                    // console.log(temp);
+                }
+                // console.log(freqs);
+                sphere.geometry.verticesNeedUpdate = true;
+                // sphere.geometry.normalsNeedUpdate = true;
+                renderer.render( scene, camera );
+                composer.render();
+            }
+
+
+
+            function load_music(url) {
+                var request = new XMLHttpRequest();
+                request.open("GET", url, true);
+                request.responseType = "arraybuffer";
+                request.onload = function() {
+                    context.decodeAudioData(request.response, init_music, error);
+                }
+                request.send();
+            }
+
+            function createAudioGraph(buffer, context) {
+                var source = null
+                    startedAt = 0,
+                    pausedAt = 0,
+                    playing = false,
+                    scriptNode = null;
+                var play = function() {
+                    // Initializes node to stream in audio data in chunks
+                    scriptNode = context.createScriptProcessor(2048, 2, 2);
+                    scriptNode.buffer = buffer;
+                    scriptNode.connect(context.destination);
+
+                    // Creates node to analyze data from the left channel
+                    var analyser = context.createAnalyser();
+                    analyser.smoothingTimeConstant = 0.6;
+                    analyser.fftSize = 256;
+
+                    // Initializes source node to play the audio
+                    source = context.createBufferSource();
+                    source.buffer = buffer;
+                    source.loop = false;
+
+                    source.connect(analyser);
+                    // // Creates a splitter node to process multiple channels of audio
+                    // splitter = context.createChannelSplitter(2);
+                    //
+                    // // Splits audio data into 2 channels
+                    // source.connect(splitter);
+                    //
+                    // // Each channel is connected to its own analyzer
+                    // splitter.connect(left_analyser, 0);
+                    // splitter.connect(right_analyser, 1);
+
+                    // Each analyzer is connected to the script node to receive data
+                    analyser.connect(scriptNode);
+
+                    // The source is connected to the audio file
+                    source.connect(context.destination);
+
+                    scriptNode.onaudioprocess = function(e) {
+                        freqs = new Uint8Array(analyser.frequencyBinCount);
+                        analyser.getByteFrequencyData(freqs);
+                        var volume = getAverageVolume(freqs);
+                        render(freqs, volume);
+                    };
+
+                    var offset = pausedAt;
+                    startedAt = context.currentTime - offset;
+                    pausedAt = 0;
+                    playing = true;
+                    source.start(0, offset);
+                }
+                function getAverageVolume(array) {
+                    var total_freq = 0;
+
+                    for (var i = 0; i < array.length; ++i) {
+                        total_freq += array[i];
+                    }
+
+                    return total_freq / array.length;
+                }
+                var pause = function() {
+                    var elapsed = context.currentTime - startedAt;
+                    stop();
+                    pausedAt = elapsed;
+                };
+                var stop = function() {
+                    if (source) {
+                        if (scriptNode) {
+                            scriptNode.disconnect(context.destination);
+                        }
+                        source.disconnect();
+                        source.stop(0);
+                        source = null;
+                    }
+                    pausedAt = 0;
+                    startedAt = 0;
+                    playing = false;
+                };
+                var getPlaying = function() {
+                    return playing;
+                };
+                var getCurrentTime = function() {
+                    if(pausedAt) {
+                        return pausedAt;
+                    }
+                    if(startedAt) {
+                        return context.currentTime - startedAt;
+                    }
+                    return 0;
+                };
+                var getDuration = function() {
+                  return buffer.duration;
+                };
+                return {
+                    getCurrentTime: getCurrentTime,
+                    getDuration: getDuration,
+                    getPlaying: getPlaying,
+                    play: play,
+                    pause: pause,
+                    stop: stop
+                };
+            }
+
+            function error(e){
+                console.error('ERROR: context.decodeAudioData:', e);
+            }
+		</script>
+
+	</body>
+</html>
