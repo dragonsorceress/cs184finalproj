@@ -20,7 +20,7 @@ function loadTexture(textureName,index) {
 }
 
 function handleTextureLoaded(image,index,textureName) {
-  console.log("loaded texture " + textureName);
+  //console.log("loaded texture " + textureName);
   gl.bindTexture(gl.TEXTURE_2D, textures[index]);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -53,7 +53,7 @@ fireParticles = [];
 sparkParticles = [];
 
 function createFireParticle(emitCenter, mag, volume, left) {
-    var speed = randomSpread(options.fireSpeed, volume);
+    var speed = randomSpread(options.fireSpeed, volume*3);
     var color = {};
     var hue = randomSpread(-180 + (mag/256)*180, 8);
     if (left)
@@ -149,12 +149,12 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
   var left_bins = [];
   var right_bins = [];
   particleDiscrepancy += 256*(timeDifference)/1000.0;
-  for (var i = 0; i < frequencies.length; i+=8) {
+  for (var i = 0; i < frequencies.length; i+=4) {
     var magnitude = 0;
-    for (var j = 0; j < 8; j++) {
+    for (var j = 0; j < 4; j++) {
       magnitude += frequencies[i+j];
     }
-    magnitude /= 8;
+    magnitude /= 4;
     if (i < 128) {
       left_bins.push(magnitude);
     } else {
@@ -163,7 +163,7 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
   }
 
   while (particleDiscrepancy > 0) {
-    var w = Math.floor(canvas.width / 2 / 16);
+    var w = Math.floor(canvas.width / 2 / 32);
     for (var i = 0; i < left_bins.length; i++) {
       var pos = w*i;
       createFireParticle({x:20+pos,y:canvas.height}, left_bins[i], left_vol, true);
@@ -294,7 +294,9 @@ function drawRects(rects,textureIndex) {
 
 // AUDIO CODE STARTS HERE
 
-var url = 'jazz.mp3';
+
+var url = './jazz.mp3';
+
 var context = new AudioContext();
 var left_freqs = new Array();
 var right_freqs = new Array();
