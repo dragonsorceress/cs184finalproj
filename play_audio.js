@@ -2,7 +2,6 @@ var options = {
   fireEmitPositionSpread: {x:2,y:2},
   fireSpeed: 800.0,
   fireSpeedVariance: 80.0,
-  fireDeathSpeed: 800.0,
 };
 window.onload = setupWebGL
 
@@ -148,7 +147,7 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
   // update fire particles
   var left_bins = [];
   var right_bins = [];
-  particleDiscrepancy += 256*(timeDifference)/1000.0;
+  particleDiscrepancy += 128*(timeDifference)/1000.0;
   for (var i = 0; i < frequencies.length; i+=4) {
     var magnitude = 0;
     for (var j = 0; j < 4; j++) {
@@ -183,7 +182,7 @@ function computeNewPositions(frequencies, left_vol, right_vol) {
     // move the particle
     fireParticles[i].pos = addVecs(fireParticles[i].pos,scaleVec(fireParticles[i].vel,timeDifference/1000.0));
     var scale_volume = fireParticles[i].left ? left_vol : right_vol;
-    fireParticles[i].color.a -= options.fireDeathSpeed / scale_volume / fireParticles[i].mag;
+    fireParticles[i].color.a -= 100/ scale_volume / fireParticles[i].mag;
 
     if (fireParticles[i].pos.y <= canvas.height - canvas.height*(fireParticles[i].mag/256) || fireParticles[i].color.a <= 0) {
       markForDeletion(fireParticles,i);
@@ -295,7 +294,7 @@ function drawRects(rects,textureIndex) {
 // AUDIO CODE STARTS HERE
 
 
-var url = './jazz.mp3';
+var url = './speaking_gently.mp3';
 
 var context = new AudioContext();
 var left_freqs = new Array();
