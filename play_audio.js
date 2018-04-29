@@ -1,5 +1,5 @@
 var options = {
-  fireEmitPositionSpread: {x:1,y:0},
+  fireEmitPositionSpread: {x:2,y:2},
   fireSpeed: 800.0,
   fireSpeedVariance: 80.0,
   fireDeathSpeed: 800.0,
@@ -53,12 +53,11 @@ fireParticles = [];
 sparkParticles = [];
 
 function createFireParticle(emitCenter, mag, volume, left) {
-    var speed = randomSpread(options.fireSpeed,options.fireSpeed*options.fireSpeedVariance/100.0);
+    var speed = randomSpread(options.fireSpeed, volume);
     var color = {};
+    var hue = randomSpread(-180 + (mag/256)*180, 8);
     if (left)
-      var hue = randomSpread(-180 + (mag/volume)*180, 16);
-    else
-      var hue = randomSpread(180 - (mag/volume)*180, 16);
+        hue = -hue;
     color = HSVtoRGB(convertHue(hue),1.0,1.0);
     color.a = 0.5;
     var particle = {
