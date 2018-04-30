@@ -1,7 +1,6 @@
 var options = {
-  fireEmitPositionSpread: {x:2,y:2},
+  fireEmitPositionSpread: {x:2, y:30},
   fireSpeed: 800.0,
-  fireSpeedVariance: 80.0,
   fireDeathSpeed: 100.0
 };
 window.onload = setupWebGL;
@@ -50,10 +49,10 @@ function loadAllTextures() {
 
 fireParticles = [];
 
-function createFireParticle(emitCenter, magnitude, volume, isLeft) {
-  var speed = randomSpread(options.fireSpeed, volume * 3);
+function createFireParticle(emitCenter, decibels, distFromCenter, volume, isLeft) {
+  var speed = randomSpread(options.fireSpeed, volume);
   var color = {};
-  var hue = randomSpread(-180 + (magnitude / 256) * 180, 8);
+  var hue = randomSpread(-180 + distFromCenter * 180, 8);
   if (isLeft) {
     hue = -hue;
   }
@@ -62,10 +61,10 @@ function createFireParticle(emitCenter, magnitude, volume, isLeft) {
   var particle = {
     pos: random2DVec(emitCenter, options.fireEmitPositionSpread),
     velocity: scaleVec(randomUnitVec(Math.PI / 2, 0), speed),
-    size: {width: (magnitude / 256) * 40,
-           height: (magnitude / 256) * 40},
+    size: {width: decibels / 256 * 40,
+           height: decibels / 256 * 40},
     color: color,
-    magnitude: magnitude,
+    magnitude: decibels,
     volume: volume,
     isLeft: isLeft
     };
@@ -119,8 +118,8 @@ function setupWebGL() {
   gl.clear(gl.COLOR_BUFFER_BIT);
 }
 
-function animationLoop(frequencies, leftVolume, rightVolume) {
-  computeNewPositions(frequencies, leftVolume, rightVolume);
+function animationLoop(leftBins, rightBins, leftVolume, rightVolume) {
+  computeNewPositions(leftBins, rightBins, leftVolume, rightVolume);
   render();
 }
 
@@ -134,53 +133,7 @@ var numParticlesToCreate = 0;
 var lastParticleTime = time();
 
 // calculate new positions for all the particles
-function computeNewPositions(frequencies, leftVolume, rightVolume) {
-  // Condensing the frequency bins down to the number of fire pillars in the visualization
-  var leftBins = [];
-  var rightBins = [];
-  var inputFreqPerBin = 1;
-  var iterationsPerScale = 8; 
-  for (var i = 127; i > 7; ) {
-    for (var k = 0; k < iterationsPerScale; ++k) {
-      var magnitude = 0;
-      for (var j = i; j > i - inputFreqPerBin; --j) {
-        magnitude += frequencies[j];
-      }
-      magnitude /= inputFreqPerBin;
-      leftBins.push(magnitude);
-      i = j;
-    }
-    inputFreqPerBin *= 2;
-  }
-  leftBins.reverse();
-  inputFreqPerBin = 1;
-  for (var i = 128; i < 248; ) {
-    for (var k = 0; k < iterationsPerScale; ++k) {
-      var magnitude = 0;
-      for (var j = i; j < i + inputFreqPerBin; ++j) {
-        magnitude += frequencies[j];
-      }
-      magnitude /= inputFreqPerBin;
-      rightBins.push(magnitude);
-      i = j;
-    }
-    inputFreqPerBin *= 2;
-  }
-
-  // var binsPerColumn = 4;
-  // for (var i = 0; i < frequencies.length; i += binsPerColumn) {
-  //   var magnitude = 0;
-  //   for (var j = 0; j < binsPerColumn; ++j) {
-  //     magnitude += frequencies[i + j];
-  //   }
-  //   magnitude /= binsPerColumn;
-  //   if (i < 128) {
-  //     leftBins.push(magnitude);
-  //   } else {
-  //     rightBins.push(magnitude);
-  //   }
-  // }
-
+function computeNewPositions(leftBins, rightBins, leftVolume, rightVolume) {
   // Generate new fire particles
   var currentParticleTime = time();
   var timeDifference = currentParticleTime - lastParticleTime;
@@ -192,11 +145,11 @@ function computeNewPositions(frequencies, leftVolume, rightVolume) {
     var w = Math.floor(canvas.width / 2 / 32);
     for (var i = 0; i < leftBins.length; ++i) {
       var center = {x:20 + w * i, y:canvas.height};
-      fireParticles.push(createFireParticle(center, leftBins[i], leftVolume, true));
+      fireParticles.push(createFireParticle(center, leftBins[i], i / leftBins.length, leftVolume, true));
     }
     for (var i = 0; i < rightBins.length; ++i) {
       var center = {x:20 + w * i + canvas.width / 2, y:canvas.height};
-      fireParticles.push(createFireParticle(center, rightBins[i], rightVolume, false));
+      fireParticles.push(createFireParticle(center, rightBins[i], (rightBins.length - i) / rightBins.length, rightVolume, false));
     }
     numParticlesToCreate -= 1.0;
   }
@@ -299,7 +252,7 @@ function drawRects(rects, textureIndex) {
 
 // AUDIO CODE STARTS HERE
 
-var url = './speaking_gently.mp3';
+var url = './someday_my_prince.mp3';
 
 var context = new AudioContext();
 
@@ -312,6 +265,8 @@ function load(url) {
     }
     request.send();
 }
+
+var numDisplayBuckets = 32;
 
 function createAudioGraph(buffer, context) {
   var source = null
@@ -335,12 +290,12 @@ function createAudioGraph(buffer, context) {
 
     // Creates node to analyze data from the left channel
     var leftAnalyser = context.createAnalyser();
-    leftAnalyser.smoothingTimeConstant = 0.1;
+    leftAnalyser.smoothingTimeConstant = 0.0;
     leftAnalyser.fftSize = 256;
 
     // Creates node to analyze data from the left channel
     var rightAnalyser = context.createAnalyser();
-    rightAnalyser.smoothingTimeConstant = 0.1;
+    rightAnalyser.smoothingTimeConstant = 0.0;
     rightAnalyser.fftSize = 256;
 
     // Initializes source node to play the audio
@@ -382,14 +337,10 @@ function createAudioGraph(buffer, context) {
       var leftVolume = getAverageVolume(leftFreqs);
       var rightVolume = getAverageVolume(rightFreqs);
       var mergedFreqs = new Uint8Array(2 * leftFreqs.length);
+      leftFreqs = convertFftToDisplay(leftFreqs);
       leftFreqs = leftFreqs.reverse();
-      for (var i = 0; i < leftFreqs.length; ++i) {
-        mergedFreqs[i] = leftFreqs[i];
-      }
-      for (var i = leftFreqs.length; i < mergedFreqs.length; ++i) {
-        mergedFreqs[i] = rightFreqs[i - leftFreqs.length];
-      }
-      animationLoop(mergedFreqs, leftVolume, rightVolume);
+      rightFreqs = convertFftToDisplay(rightFreqs);
+      animationLoop(leftFreqs, rightFreqs, leftVolume, rightVolume);
     };
 
     var offset = pausedAt;
@@ -397,6 +348,25 @@ function createAudioGraph(buffer, context) {
     pausedAt = 0;
     playing = true;
     source.start(0, offset);
+  }
+
+  function convertFftToDisplay(frequencyBins) {
+    var span = Math.log2(frequencyBins.length);
+    var widthPerDisplayBucket = span / numDisplayBuckets;
+    var currentBin = 0;
+    var displayBins = [];
+    for (var i = 0; i < numDisplayBuckets; ++i) {
+      var magnitude = 0;
+      var binCount = 0;
+      do {
+        magnitude += frequencyBins[currentBin];
+        ++currentBin;
+        ++binCount;
+      } while (Math.log2(currentBin) < i * widthPerDisplayBucket);
+      magnitude /= binCount;
+      displayBins.push(magnitude);
+    }
+    return displayBins;
   }
 
   function getAverageVolume(frequencies) {
