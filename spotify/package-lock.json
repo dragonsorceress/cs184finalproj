@@ -1,0 +1,9 @@
+{
+  "requires": true,
+  "lockfileVersion": 1,
+  "dependencies": {
+    "spotify-web-api-js": {
+      "version": "file:spotify-web-api-js"
+    }
+  }
+}
