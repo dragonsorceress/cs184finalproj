@@ -138,19 +138,48 @@ function computeNewPositions(frequencies, leftVolume, rightVolume) {
   // Condensing the frequency bins down to the number of fire pillars in the visualization
   var leftBins = [];
   var rightBins = [];
-  var binsPerColumn = 4;
-  for (var i = 0; i < frequencies.length; i += binsPerColumn) {
-    var magnitude = 0;
-    for (var j = 0; j < binsPerColumn; ++j) {
-      magnitude += frequencies[i + j];
-    }
-    magnitude /= binsPerColumn;
-    if (i < 128) {
+  var inputFreqPerBin = 1;
+  var iterationsPerScale = 8; 
+  for (var i = 127; i > 7; ) {
+    for (var k = 0; k < iterationsPerScale; ++k) {
+      var magnitude = 0;
+      for (var j = i; j > i - inputFreqPerBin; --j) {
+        magnitude += frequencies[j];
+      }
+      magnitude /= inputFreqPerBin;
       leftBins.push(magnitude);
-    } else {
-      rightBins.push(magnitude);
+      i = j;
     }
+    inputFreqPerBin *= 2;
   }
+  leftBins.reverse();
+  inputFreqPerBin = 1;
+  for (var i = 128; i < 248; ) {
+    for (var k = 0; k < iterationsPerScale; ++k) {
+      var magnitude = 0;
+      for (var j = i; j < i + inputFreqPerBin; ++j) {
+        magnitude += frequencies[j];
+      }
+      magnitude /= inputFreqPerBin;
+      rightBins.push(magnitude);
+      i = j;
+    }
+    inputFreqPerBin *= 2;
+  }
+
+  // var binsPerColumn = 4;
+  // for (var i = 0; i < frequencies.length; i += binsPerColumn) {
+  //   var magnitude = 0;
+  //   for (var j = 0; j < binsPerColumn; ++j) {
+  //     magnitude += frequencies[i + j];
+  //   }
+  //   magnitude /= binsPerColumn;
+  //   if (i < 128) {
+  //     leftBins.push(magnitude);
+  //   } else {
+  //     rightBins.push(magnitude);
+  //   }
+  // }
 
   // Generate new fire particles
   var currentParticleTime = time();
@@ -306,12 +335,12 @@ function createAudioGraph(buffer, context) {
 
     // Creates node to analyze data from the left channel
     var leftAnalyser = context.createAnalyser();
-    leftAnalyser.smoothingTimeConstant = 0.6;
+    leftAnalyser.smoothingTimeConstant = 0.1;
     leftAnalyser.fftSize = 256;
 
     // Creates node to analyze data from the left channel
     var rightAnalyser = context.createAnalyser();
-    rightAnalyser.smoothingTimeConstant = 0.6;
+    rightAnalyser.smoothingTimeConstant = 0.1;
     rightAnalyser.fftSize = 256;
 
     // Initializes source node to play the audio
