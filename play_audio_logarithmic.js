@@ -252,11 +252,20 @@ function drawRects(rects, textureIndex) {
 
 // AUDIO CODE STARTS HERE
 
-var url = './someday_my_prince.mp3';
-
-var context = new AudioContext();
+var context;
 
 function load(url) {
+   if (context) {
+      context.close().then(function() {
+        var play = document.querySelector('[data-js="play"]'),
+            stop = document.querySelector('[data-js="stop"]');
+        var playClone = play.cloneNode(true);
+        play.parentNode.replaceChild(playClone, play);
+        var stopClone = stop.cloneNode(true);
+        stop.parentNode.replaceChild(stopClone, stop);
+      });
+    }
+    context = new AudioContext();
     var request = new XMLHttpRequest();
     request.open("GET", url, true);
     request.responseType = "arraybuffer";
@@ -445,5 +454,3 @@ function init(buffer) {
 function error(e){
   console.error('ERROR: context.decodeAudioData:', e);
 }
-
-load(url);

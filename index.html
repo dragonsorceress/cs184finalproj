@@ -14,7 +14,6 @@ varying vec2 v_texture_coord;
 uniform vec2 u_resolution;
 
 void main() {
-
   vec2 clipSpace = (a_position/u_resolution)*2.0-1.0;
   gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
   v_color = a_color;
@@ -45,6 +44,36 @@ void main() {
 </script>
 
 <script type="text/javascript" src="play_audio.js"></script>
+
+<script>
+// YOU NEED TO CHANGE THE ARRAY OF SONG URLs AND
+// TITLES. Alternate MP3 file URLs and titles, in quotes
+// and separated by commas, beginning with the first song URL.
+// If you use " marks in filenames or titles, or put a \
+// in front of them.
+var songs = new Array(
+  "",
+  "-- Select a song --",
+  "./speaking_gently.mp3",
+  "Speaking Gently",
+  "./such_great_heights.mp3",
+  "Such Great Heights",
+  "./someday_my_prince.mp3",
+  "Someday My Prince Will Come - Miles Davis",
+  "./frontier_village_night.mp3",
+  "Xenoblade Chronicles: Frontier Village (Night)"
+);
+
+function switchSongs(i)
+{
+  var file = songs[i * 2];
+  var selector = document.getElementById('song_selector');  
+  selector.selectedIndex = i;
+  if (i != 0) {
+    load(file);
+  }
+}
+</script>
 
 
 <style>
@@ -132,6 +161,17 @@ void main() {
 </style>
 </head>
 <body>
+    <select name="song_selector" id="song_selector" onChange="switchSongs(selectedIndex)">
+    <script>
+    for (i = 0; (i < songs.length); i += 2) {
+      var file = songs[i];
+      var title = songs[i + 1];
+      document.write('<option value="' + 
+        i + '">' +
+        title + '</option>\n');
+    }
+    </script>
+    </select>
     <div class="menu">
         <button data-js="play">play</button>
         <button data-js="stop">stop</button>
