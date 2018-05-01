@@ -122,6 +122,20 @@
 		    load_music(file);
 		  }
 		}
+
+        var viz_options = new Array(
+            "-- Choose a Visualization --",
+            "Wings",
+            "Blob",
+            "Rings"
+        );
+
+        var viz_option;
+
+        function switchViz(i) {
+            viz_option = viz_options[i];
+            console.log(viz_option);
+        }
 		</script>
 
 		<div class="menu">
@@ -142,6 +156,18 @@
 	            </script>
 	            </select>
 	        </div>
+            <div>
+                <select name="viz_selector" id="viz_selector" onChange="switchViz(selectedIndex)">
+	            <script>
+	            for (i = 0; (i < viz_options.length); i += 1) {
+	              var type = viz_options[i];
+	              document.write('<option value="' +
+	                i + '">' +
+	                type + '</option>\n');
+	            }
+	            </script>
+	            </select>
+            </div>
 	        <a href="index.html" style="margin-top: 0.5rem;display:block;"><button>-></button></a>
 	    </div>
 
@@ -270,14 +296,59 @@
                 // console.log(dist * target_dist + a);
                 return dist * target_dist + a;
             }
-            // function animate() {
-            // 	requestAnimationFrame( animate );
-            // 	render();
-            // }
             function render(freqs, volume) {
-                // var timer = 0.0001 * Date.now();
-                // console.log(freqs.length);
-                // console.log(sphere.geometry.vertices.length);
+                // console.log(viz_option);
+                if (viz_option == "Wings") {
+                    render_wings(freqs, volume, 0.5, 1.5);
+                }
+                else if (viz_option == "Rings") {
+                    render_rings(freqs, volume, 0.5, 1.0);
+                } else {
+                    // var timer = 0.0001 * Date.now();
+
+                    var spectrum = freqs.slice(4, freqs.length);
+                    for ( var i = 0 ; i < sphere.geometry.vertices.length; i ++ ) {
+                        if (i < spectrum.length) {
+                            var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(Math.max(spectrum[i] / 255, 0.2));
+                            sphere.geometry.vertices[i].multiplyScalar(0.0);
+                            sphere.geometry.vertices[i].add(temp);
+                        }
+                        else {
+                            var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(0.2);
+                            sphere.geometry.vertices[i].multiplyScalar(0.0);
+                            sphere.geometry.vertices[i].add(temp);
+                        }
+                        // console.log(temp);
+                    }
+                    // console.log(freqs);
+                }
+
+                sphere.geometry.verticesNeedUpdate = true;
+                sphere.geometry.normalsNeedUpdate = true;
+                renderer.render( scene, camera );
+                composer.render();
+            }
+
+            function render_rings(freqs, volume, lower, higher) {
+                var spectrum_32 = [];
+                for (var i = 0; i < 32; i ++) {
+                    var sum = 0.0;
+                    for (var j = 0; j < freqs.length / 32; j++) {
+                        sum += freqs[i*freqs.length/32 + j] / freqs.length * 32.0;
+                    }
+                    spectrum_32.push(sum);
+                }
+                for (var i = 1; i < sphere.geometry.vertices.length; i +=1) {
+                    var index = Math.floor(i / 32);
+                    var val = interpolate(lower, higher, 0.0, 255.0, spectrum_32[index]);
+                    // console.log(val);
+                    var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(val);
+                    sphere.geometry.vertices[i].multiplyScalar(0.0);
+                    sphere.geometry.vertices[i].add(temp);
+                }
+            }
+
+            function render_wings(freqs, volume, lower, higher) {
                 var spectrum_32 = [];
                 for (var i = 0; i < 32; i ++) {
                     var sum = 0.0;
@@ -287,16 +358,13 @@
                     spectrum_32.push(sum);
                 }
                 for (var i = 0; i < sphere.geometry.vertices.length; i ++) {
-                    var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(0.2);
+                    var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(lower);
                     sphere.geometry.vertices[i].multiplyScalar(0.0);
                     sphere.geometry.vertices[i].add(temp);
                 }
-                // sphere.geometry.vertices[0].multiplyScalar(0.2);
                 for (var i = 1; i < sphere.geometry.vertices.length; i +=32) {
                     var index = Math.floor(i / 32);
-                    // console.log(index);
-                    var val = interpolate(0.2, 1.0, 0.0, 255.0, spectrum_32[index]);
-                    // console.log(val);
+                    var val = interpolate(lower, higher, 0.0, 255.0, spectrum_32[index]);
                     var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(val);
                     sphere.geometry.vertices[i].multiplyScalar(0.0);
                     sphere.geometry.vertices[i].add(temp);
@@ -306,28 +374,7 @@
                         sphere.geometry.vertices[i+16].add(temp2);
                     }
                 }
-                // var spectrum = freqs.slice(4, freqs.length);
-                // for ( var i = 0 ; i < sphere.geometry.vertices.length; i ++ ) {
-                //     if (i < spectrum.length) {
-                //         var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(Math.max(spectrum[i] / 255, 0.2));
-                //         sphere.geometry.vertices[i].multiplyScalar(0.0);
-                //         sphere.geometry.vertices[i].add(temp);
-                //     }
-                //     else {
-                //         var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(0.2);
-                //         sphere.geometry.vertices[i].multiplyScalar(0.0);
-                //         sphere.geometry.vertices[i].add(temp);
-                //     }
-                //     // console.log(temp);
-                // }
-                // console.log(freqs);
-                sphere.geometry.verticesNeedUpdate = true;
-                sphere.geometry.normalsNeedUpdate = true;
-                renderer.render( scene, camera );
-                composer.render();
             }
-
-
 
             function load_music(url) {
                 var request = new XMLHttpRequest();
