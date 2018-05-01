@@ -1,0 +1,216 @@
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="js_helpers/webgl-utils.js"></script>
+<script type="text/javascript" src="js_helpers/mathHelper.js"></script>
+<script type="text/javascript" src="js_helpers/otherHelper.js"></script>
+<script type="text/javascript" src="js_helpers/perlin.js"></script>
+<!-- vertex shader -->
+<script id="2d-vertex-shader" type="x-shader/x-vertex">
+attribute vec2 a_position;
+attribute vec4 a_color;
+attribute vec2 a_texture_coord;
+varying vec4 v_color;
+varying vec2 v_texture_coord;
+uniform vec2 u_resolution;
+
+void main() {
+  vec2 clipSpace = (a_position/u_resolution)*2.0-1.0;
+  gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
+  v_color = a_color;
+  v_texture_coord = a_texture_coord;
+}
+</script>
+</script>
+
+<script id="2d-fragment-shader" type="x-shader/x-fragment">
+precision mediump float;
+
+varying vec4 v_color;
+varying highp vec2 v_texture_coord;
+
+uniform sampler2D u_sampler;
+
+void main() {
+   vec2 uv = gl_FragCoord.xy/vec2(800,600);
+   ;
+   vec4 texColor = texture2D(u_sampler,v_texture_coord.xy);
+   vec4 finalColor;
+   finalColor.r = texColor.r*v_color.r;
+   finalColor.g = texColor.g*v_color.g;
+   finalColor.b = texColor.b*v_color.b;
+   finalColor.a = texColor.a*v_color.a;
+   gl_FragColor = finalColor;
+}
+</script>
+
+<script type="text/javascript" src="play_audio_logarithmic.js"></script>
+
+<script>
+// YOU NEED TO CHANGE THE ARRAY OF SONG URLs AND
+// TITLES. Alternate MP3 file URLs and titles, in quotes
+// and separated by commas, beginning with the first song URL.
+// If you use " marks in filenames or titles, or put a \
+// in front of them.
+var songs = new Array(
+  "",
+  "-- Select a song --",
+  "songs/speaking_gently.mp3",
+  "Speaking Gently",
+  "songs/such_great_heights.mp3",
+  "Such Great Heights",
+  "songs/someday_my_prince.mp3",
+  "Someday My Prince Will Come - Miles Davis",
+  "songs/frontier_village_night.mp3",
+  "Xenoblade Chronicles: Frontier Village (Night)",
+  "songs/fuck_cancer.mp3",
+  "Fuck Cancer",
+  "songs/jazz.mp3",
+  "Jazz",
+  "songs/really_love.mp3",
+  "Really Love",
+  "songs/rough_soul_remix.mp3",
+  "Rough Soul",
+  "songs/my_girl.mp3",
+  "My Girl"
+);
+
+function switchSongs(i)
+{
+  var file = songs[i * 2];
+  var selector = document.getElementById('song_selector');
+  selector.selectedIndex = i;
+  if (i != 0) {
+    load(file);
+  }
+}
+</script>
+
+
+<style>
+    html, body, div, span, applet, object, iframe,
+    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+    a, abbr, acronym, address, big, cite, code,
+    del, dfn, em, img, ins, kbd, q, s, samp,
+    small, strike, strong, sub, sup, tt, var,
+    b, u, i, center,
+    dl, dt, dd, ol, ul, li,
+    fieldset, form, label, legend,
+    table, caption, tbody, tfoot, thead, tr, th, td,
+    article, aside, canvas, details, embed,
+    figure, figcaption, footer, header, hgroup,
+    menu, nav, output, ruby, section, summary,
+    time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+    }
+    /* HTML5 display-role reset for older browsers */
+    article, aside, details, figcaption, figure,
+    footer, header, hgroup, menu, nav, section {
+    display: block;
+    }
+    body {
+    line-height: 1;
+    }
+    ol, ul {
+    list-style: none;
+    }
+    blockquote, q {
+    quotes: none;
+    }
+    blockquote:before, blockquote:after,
+    q:before, q:after {
+    content: '';
+    content: none;
+    }
+    table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    }
+
+    html, body {
+        height:100%;
+        width:100%;
+    }
+
+    html {
+        box-sizing: border-box;
+    }
+
+    *, *:before, *:after {
+        box-sizing: inherit;
+    }
+
+    #volume {
+        height:200px;
+        width:60px;
+    }
+
+    #left, #right {
+        height:100%;
+        width:50%;
+    }
+
+    #left {
+        float:left;
+    }
+
+    .menu {
+        position:absolute;
+        right: 0px;
+        top: 0px;
+        padding: 1rem;
+        background: rgba(255,255,255,0.5);
+    }
+
+    button {
+        width: 50%;
+    }
+
+</style>
+</head>
+<body>
+
+
+    <div class="menu">
+        <div style="padding:0.5rem 0;">
+            <button style="float:left" data-js="play">play</button>
+            <button data-js="stop">stop</button>
+        </div>
+        <div>
+            <select name="song_selector" id="song_selector" onChange="switchSongs(selectedIndex)">
+            <script>
+            for (i = 0; (i < songs.length); i += 2) {
+              var file = songs[i];
+              var title = songs[i + 1];
+              document.write('<option value="' +
+                i + '">' +
+                title + '</option>\n');
+            }
+            </script>
+            </select>
+        </div>
+        <a href="blob.html" style="margin-top: 0.5rem;display:block;"><button>Blob Visual</button></a>
+        <a href="index.html" style="margin-top: 0.5rem;display:block;"><button>Fire Sim (Linear)</button></a>
+    </div>
+    <div class="containerDiv">
+        <div class="leftPanel" > <canvas id="canvas"></canvas> </div>
+        <div class="rightPanel" style="display:none">
+
+          <div style="line-height: 64px;">
+          <label for="fireTexture">Texture</label>
+          <select id="fireTexture" class="textureComboBox"></select>
+          <img style="display:inline-block; vertical-align: middle;" id="fireTextureVal" width="64" height="64" src="textures/gradient.png"></img><br>
+          </div>
+
+        </div>
+    </div>
+
+<div class="footer">
+<div id="fps"></div><div id="numParticles"></div>
+</div>
+</body>
+</html>
