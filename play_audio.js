@@ -138,6 +138,35 @@ function computeNewPositions(frequencies, leftVolume, rightVolume) {
   // Condensing the frequency bins down to the number of fire pillars in the visualization
   var leftBins = [];
   var rightBins = [];
+  // var inputFreqPerBin = 1;
+  // var iterationsPerScale = 8;
+  // for (var i = 127; i > 7; ) {
+  //   for (var k = 0; k < iterationsPerScale; ++k) {
+  //     var magnitude = 0;
+  //     for (var j = i; j > i - inputFreqPerBin; --j) {
+  //       magnitude += frequencies[j];
+  //     }
+  //     magnitude /= inputFreqPerBin;
+  //     leftBins.push(magnitude);
+  //     i = j;
+  //   }
+  //   inputFreqPerBin *= 2;
+  // }
+  // leftBins.reverse();
+  // inputFreqPerBin = 1;
+  // for (var i = 128; i < 248; ) {
+  //   for (var k = 0; k < iterationsPerScale; ++k) {
+  //     var magnitude = 0;
+  //     for (var j = i; j < i + inputFreqPerBin; ++j) {
+  //       magnitude += frequencies[j];
+  //     }
+  //     magnitude /= inputFreqPerBin;
+  //     rightBins.push(magnitude);
+  //     i = j;
+  //   }
+  //   inputFreqPerBin *= 2;
+  // }
+
   var binsPerColumn = 4;
   for (var i = 0; i < frequencies.length; i += binsPerColumn) {
     var magnitude = 0;
@@ -271,10 +300,20 @@ function drawRects(rects, textureIndex) {
 // AUDIO CODE STARTS HERE
 
 var url = './my_girl.mp3';
-
 var context = new AudioContext();
 
 function load(url) {
+    if (context) {
+      context.close().then(function() {
+        var play = document.querySelector('[data-js="play"]'),
+            stop = document.querySelector('[data-js="stop"]');
+        var playClone = play.cloneNode(true);
+        play.parentNode.replaceChild(playClone, play);
+        var stopClone = stop.cloneNode(true);
+        stop.parentNode.replaceChild(stopClone, stop);
+      });
+    }
+    context = new AudioContext();
     var request = new XMLHttpRequest();
     request.open("GET", url, true);
     request.responseType = "arraybuffer";
@@ -306,12 +345,12 @@ function createAudioGraph(buffer, context) {
 
     // Creates node to analyze data from the left channel
     var leftAnalyser = context.createAnalyser();
-    leftAnalyser.smoothingTimeConstant = 0.6;
+    leftAnalyser.smoothingTimeConstant = 0.1;
     leftAnalyser.fftSize = 256;
 
     // Creates node to analyze data from the left channel
     var rightAnalyser = context.createAnalyser();
-    rightAnalyser.smoothingTimeConstant = 0.6;
+    rightAnalyser.smoothingTimeConstant = 0.1;
     rightAnalyser.fftSize = 256;
 
     // Initializes source node to play the audio
@@ -446,5 +485,3 @@ function init(buffer) {
 function error(e){
   console.error('ERROR: context.decodeAudioData:', e);
 }
-
-load(url);
