@@ -5,10 +5,10 @@ var options = {
 };
 window.onload = setupWebGL;
 
-textureList = ["rectangle.png", "circle.png", "gradient.png", "explosion.png", "flame.png"];
+textureList = ["gradient.png"];
 images = [];
 textures = [];
-currentTextureIndex = 2;
+currentTextureIndex = 0;
 
 function loadTexture(textureName,index) {
   textures[index] = gl.createTexture();
