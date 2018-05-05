@@ -218,7 +218,6 @@
 
                 // Spheres geometry
                 var geometry = new THREE.SphereGeometry( 1, 32, 31 );
-                console.log(geometry.vertices);
                 sphere = addMesh( geometry, material);
                 // console.log(geometry.vertices);
                 sphere.geometry.initialVertices = [];
@@ -290,6 +289,7 @@
                     stop = document.querySelector('[data-js="stop"]'),
                     info = document.querySelector('[data-js="info"]');
                 play.addEventListener('click', function() {
+                    console.log(graph.getPlaying());
                     if (graph.getPlaying()) {
                         graph.pause();
                         play.innerHTML = 'play';
@@ -318,6 +318,7 @@
                 var request = new XMLHttpRequest();
                 request.open("GET", url, true);
                 request.responseType = "arraybuffer";
+                console.log(url);
                 request.onload = function() {
                     context.decodeAudioData(request.response, init_music, error);
                 }
@@ -325,12 +326,21 @@
             }
 
             function createAudioGraph(buffer, context) {
+                console.log("Creating new graph");
                 var source = null
                     startedAt = 0,
                     pausedAt = 0,
                     playing = false,
                     scriptNode = null;
                 var play = function() {
+                    if (source) {
+                      if (scriptNode) {
+                          scriptNode.disconnect(context.destination);
+                      }
+                      source.disconnect();
+                      source.stop(0);
+                      source = null;
+                    }
                     // Initializes node to stream in audio data in chunks
                     scriptNode = context.createScriptProcessor(2048, 2, 2);
                     scriptNode.buffer = buffer;

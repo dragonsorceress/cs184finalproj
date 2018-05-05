@@ -53,7 +53,7 @@ fireParticles = [];
 function createFireParticle(emitCenter, magnitude, volume, isLeft) {
   var speed = randomSpread(options.fireSpeed, volume * 3);
   var color = {};
-  var hue = randomSpread(-180 + (magnitude / 256) * 180, 8);
+  var hue = randomSpread(-180 + (magnitude / 255) * 180, 8);
   if (isLeft) {
     hue = -hue;
   }
@@ -62,8 +62,8 @@ function createFireParticle(emitCenter, magnitude, volume, isLeft) {
   var particle = {
     pos: random2DVec(emitCenter, options.fireEmitPositionSpread),
     velocity: scaleVec(randomUnitVec(Math.PI / 2, 0), speed),
-    size: {width: (magnitude / 256) * 40,
-           height: (magnitude / 256) * 40},
+    size: {width: (magnitude / 255) * 40,
+           height: (magnitude / 255) * 40},
     color: color,
     magnitude: magnitude,
     volume: volume,
