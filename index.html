@@ -48,11 +48,6 @@ void main() {
 <script id="js_source" type="text/javascript" src="play_audio.js"></script>
 
 <script>
-// YOU NEED TO CHANGE THE ARRAY OF SONG URLs AND
-// TITLES. Alternate MP3 file URLs and titles, in quotes
-// and separated by commas, beginning with the first song URL.
-// If you use " marks in filenames or titles, or put a \
-// in front of them.
 var songs = new Array(
   "",
   "-- Select a song --",
@@ -115,26 +110,20 @@ function switchSongs(i)
                 </script>
             </select>
         </div>
-        <label class="container">Logarithmic
-            <a href="./logarithmic.html"><span class="checkmark"></span></a>
-        </label>
+        Logarithmic <input type="checkbox" id="myCheck" onclick="toggleLog()"><br>
         <a href="blob.html" style="float:left;display:block;"><button>&#8594;</button></a>
     </div>
-    <!-- <script>
-        var check = $(".checkmark");
-        var i = 0;
-        check.click(function() {
-            $(".checkmark").toggleClass("checked");
-            var jsrc = $("#js_source");
-            if (i % 2 == 0) {
-                jsrc[0].src = "./play_audio_logarithmic.js";
-                console.log(jsrc[0].src);
-            } else {
-                jsrc[0].src = "./play_audio.js";
-                console.log(jsrc[0].src);
-            }
-        })
-    </script> -->
+    <script>
+      var is_logarithmic;
+      function toggleLog() {
+        var checkbox = document.getElementById("myCheck");
+        if (checkbox.checked == true) {
+          is_logarithmic = true;
+        } else {
+          is_logarithmic = false;
+        }
+      }
+    </script>
     <div class="containerDiv">
         <div class="leftPanel" > <canvas id="canvas"></canvas> </div>
         <div class="rightPanel" style="display:none">

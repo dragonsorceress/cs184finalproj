@@ -79,3 +79,4 @@ initQuad(gl)
 
 /* Vertex and fragment shaders will be original.
    The rest of the shader code is taken from https://noisehack.com/build-music-visualizer-web-audio-api/ */
+// SCRAPPED IN FAVOR OF CURRENT CODE, texture loading error was never resolved
