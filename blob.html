@@ -57,9 +57,9 @@
 
         var viz_options = new Array(
             "-- Choose a Visualization --",
-            "Wings",
-            "Blob",
-            "Rings"
+            "Rings",
+            "Spiral",
+            "Wings"
         );
 
         var viz_option;
@@ -105,9 +105,29 @@
 	            </script>
 	            </select>
             </div>
+            <label class="container">Render
+                <span class="checkmark"></span>
+            </label>
+
+
             <a href="index.html" style="float:left;display:block;"><button><span>&#8594;</span></button></a>
             <!-- <a href="logarithmic.html" style="display:block;"><button>Particle Sim (Logarithmic)</button></a> -->
 	    </div>
         <script src="./blob.js"></script>
+        <script>
+            var check = $(".checkmark");
+            var i = 0;
+            check.click(function() {
+                var c = $(".checkmark");
+                $(".checkmark").toggleClass("checked");
+                if (c.hasClass("checked")) {
+                    params.material = "render";
+                    console.log(params);
+                } else {
+                    params.material = "wireframe";
+                    console.log(params);
+                }
+            })
+        </script>
 	</body>
 </html>
