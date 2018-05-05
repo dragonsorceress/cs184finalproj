@@ -3,10 +3,14 @@ var camera, scene, renderer;
 var composer;
 var lights = [];
 var pointLight;
-var sphere;
 var controls;
-
+var render_flag = false;
+var sphere, material_render, material_wireframe;
 var graph;
+
+var params = {
+	material: 'wireframe'
+};
 
 var url = './songs/fuck_cancer.mp3';
 var context = new AudioContext();
@@ -23,14 +27,14 @@ function init() {
     camera.position.set( 0, 0, 5 );
 
     // Materials
-    var material  = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe:true});
-    // var material = new THREE.MeshLambertMaterial({color: 0xffffff});
+    material_render = new THREE.MeshLambertMaterial({color: 0xffffff});
+    material_wireframe  = new THREE.MeshBasicMaterial({color: 0xffffff, wireframe:true});
+
     // var material = new THREE.MeshNormalMaterial();
 
     // Spheres geometry
     var geometry = new THREE.SphereGeometry( 1, 32, 31 );
-    sphere = addMesh( geometry, material);
-    // console.log(geometry.vertices);
+    sphere = addMesh( geometry, material_wireframe);
     sphere.geometry.initialVertices = [];
     for (var i = 0; i < sphere.geometry.vertices.length; i++) {
         sphere.geometry.initialVertices.push(sphere.geometry.vertices[i].clone());
@@ -252,32 +256,28 @@ function interpolate(a,b,x,y,t) {
     return dist * target_dist + a;
 }
 function render(freqs, volume) {
-    // console.log(freqs);
+
+    if ( sphere ) {
+        var material = sphere.material;
+        switch ( params.material ) {
+            case 'wireframe': material = material_wireframe; break;
+            case 'render': material = material_render; break;
+        }
+        sphere.material = material;
+    }
     if (viz_option == "Wings") {
         render_wings(freqs, volume, 0.5, 1.5);
     }
     else if (viz_option == "Rings") {
         render_rings(freqs, volume, 0.2, 1.0);
-    } else if (viz_option == "Blob"){
-        var spectrum = freqs.slice(4, freqs.length);
-        for ( var i = 0 ; i < sphere.geometry.vertices.length; i ++ ) {
-            if (i < spectrum.length) {
-                var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(Math.max(spectrum[i] / 255, 0.2));
-                sphere.geometry.vertices[i].multiplyScalar(0.0);
-                sphere.geometry.vertices[i].add(temp);
-            }
-            else {
-                var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(0.2);
-                sphere.geometry.vertices[i].multiplyScalar(0.0);
-                sphere.geometry.vertices[i].add(temp);
-            }
-        }
+    } else if (viz_option == "Spiral"){
+        render_blob(freqs, volume, 0.2, 1.0);
     }
 
     sphere.geometry.verticesNeedUpdate = true;
     // sphere.geometry.normalsNeedUpdate = true;
     renderer.render( scene, camera );
-    // controls.update();
+
     sphere.rotation.x += 0.03;
     sphere.rotation.y += 0.02;
     sphere.rotation.z += 0.02;
@@ -334,6 +334,38 @@ function render_wings(freqs, volume, lower, higher) {
     }
 }
 
-function render_blob(freqs, volume, lower, higher) {
+function generate_signal(spectrum, new_length) {
+    var old_length = spectrum.length;
+    var size = Math.floor(new_length / old_length);
+    var arr = new Array();
+    for (var i = 0; i < old_length-1; i++) {
+        fill(spectrum[i], spectrum[i+1], size, arr);
+    }
+    arr.push(spectrum[old_length - 1]);
+    return arr;
+}
 
+function fill(val1, val2, num, arr) {
+    var inc = (val2 - val1) / num;
+    for (var i = 0; i < num; i++) {
+        arr.push(val1 + (inc * i));
+    }
+}
+
+function render_blob(freqs, volume, lower, higher) {
+    var new_signal = generate_signal(freqs, sphere.geometry.vertices.length);
+    // console.log(new_signal);
+    for ( var i = 0 ; i < sphere.geometry.vertices.length; i ++ ) {
+        var val = interpolate(lower, higher, 0.0, 255.0, new_signal[i]);
+        if (i < new_signal.length) {
+            var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(val);
+            sphere.geometry.vertices[i].multiplyScalar(0.0);
+            sphere.geometry.vertices[i].add(temp);
+        }
+        else {
+            var temp = sphere.geometry.initialVertices[i].clone().multiplyScalar(lower);
+            sphere.geometry.vertices[i].multiplyScalar(0.0);
+            sphere.geometry.vertices[i].add(temp);
+        }
+    }
 }
