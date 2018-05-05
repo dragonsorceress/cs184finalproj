@@ -1,149 +1,113 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<link rel="stylesheet" href="./css/common.css">
-<script type="text/javascript" src="js_helpers/webgl-utils.js"></script>
-<script type="text/javascript" src="js_helpers/mathHelper.js"></script>
-<script type="text/javascript" src="js_helpers/otherHelper.js"></script>
-<script type="text/javascript" src="js_helpers/perlin.js"></script>
-<script type="text/javascript" src="js_helpers/jquery.min.js"></script>
-<!-- vertex shader -->
-<script id="2d-vertex-shader" type="x-shader/x-vertex">
-attribute vec2 a_position;
-attribute vec4 a_color;
-attribute vec2 a_texture_coord;
-varying vec4 v_color;
-varying vec2 v_texture_coord;
-uniform vec2 u_resolution;
-
-void main() {
-  vec2 clipSpace = (a_position/u_resolution)*2.0-1.0;
-  gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
-  v_color = a_color;
-  v_texture_coord = a_texture_coord;
-}
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
 </script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
 </script>
-
-<script id="2d-fragment-shader" type="x-shader/x-fragment">
-precision mediump float;
-
-varying vec4 v_color;
-varying highp vec2 v_texture_coord;
-
-uniform sampler2D u_sampler;
-
-void main() {
-   vec2 uv = gl_FragCoord.xy/vec2(800,600);
-   ;
-   vec4 texColor = texture2D(u_sampler,v_texture_coord.xy);
-   vec4 finalColor;
-   finalColor.r = texColor.r*v_color.r;
-   finalColor.g = texColor.g*v_color.g;
-   finalColor.b = texColor.b*v_color.b;
-   finalColor.a = texColor.a*v_color.a;
-   gl_FragColor = finalColor;
-}
-</script>
-
-<script id="js_source" type="text/javascript" src="play_audio.js"></script>
-
-<script>
-var songs = new Array(
-  "",
-  "-- Select a song --",
-  "songs/speaking_gently.mp3",
-  "Speaking Gently",
-  "songs/such_great_heights.mp3",
-  "Such Great Heights",
-  "songs/someday_my_prince.mp3",
-  "Someday My Prince Will Come - Miles Davis",
-  "songs/frontier_village_night.mp3",
-  "Xenoblade Chronicles: Frontier Village (Night)",
-  "songs/fuck_cancer.mp3",
-  "Fuck Cancer",
-  "songs/jazz.mp3",
-  "Jazz",
-  "songs/really_love.mp3",
-  "Really Love",
-  "songs/rough_soul_remix.mp3",
-  "Rough Soul",
-  "songs/my_girl.mp3",
-  "My Girl",
-  "songs/opus.mp3",
-  "OPUS",
-  "songs/something_they_dont_know.mp3",
-  "Something They Don't Know"
-);
-
-function switchSongs(i)
-{
-  var file = songs[i * 2];
-  var selector = document.getElementById('song_selector');
-  selector.selectedIndex = i;
-  if (i != 0) {
-    load(file);
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+<style>
+  body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
   }
-}
-</script>
-
+  h1, h2, h3, h4 {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+</style>
+<title>Music Visualizer | CS 184 Final Project</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
 </head>
+
+
 <body>
 
-    <div class="title" style="font-family:sans-serif">
-        <span>PARTICLE <br /> SIM</span>
-    </div>
-    <div class="menu">
-        <div style="padding:0.5rem 0;">
-            <button style="float:left" data-js="play">play</button>
-            <button data-js="stop">stop</button>
-        </div>
-        <div class="select-container" style="margin-top: 10px">
-            <select class="" name="song_selector" id="song_selector" onChange="switchSongs(selectedIndex)">
-                <script>
-                for (i = 0; (i < songs.length); i += 2) {
-                  var file = songs[i];
-                  var title = songs[i + 1];
-                  document.write('<option value="' +
-                    i + '">' +
-                    title + '</option>\n');
-                }
-                </script>
-            </select>
-        </div>
-        <label class="container">Logarithmic
-            <span class="checkmark"></span>
-        </label>
-        <a href="blob.html" style="float:left;display:block;"><button><span>&#8594;</span></button></a>
-    </div>
-    <script>
-    var is_logarithmic = false;
-    var check = $(".checkmark");
-    var i = 0;
-    check.click(function() {
-        var c = $(".checkmark");
-        $(".checkmark").toggleClass("checked");
-        if (c.hasClass("checked")) {
-            is_logarithmic = true;
-        } else {
-            is_logarithmic = false;
-        }
-    })
-    </script>
-    <div class="containerDiv">
-        <div class="leftPanel" > <canvas id="canvas"></canvas> </div>
-        <div class="rightPanel" style="display:none">
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
+<h1 align="middle">Final Project: Music Visualizer</h1>
+<h1 align="middle">Final Report</h1>
+<h2 align="middle">Jarry Xiao, Jacky Lu, Lucy Chen</h2>
 
-          <div style="line-height: 64px;">
-          <label for="fireTexture">Texture</label>
-          <select id="fireTexture" class="textureComboBox"></select>
-          <img style="display:inline-block; vertical-align: middle;" id="fireTextureVal" width="64" height="64" src="textures/gradient.png"></img><br>
-          </div>
+<br>
 
-        </div>
-    </div>
+<div>
 
-<div class="footer">
-<div id="fps"></div><div id="numParticles"></div>
-</div>
+<h2>Abstract</h2>
+<p>For our final project, we created a real-time music visualizer, which extracts various elements of a particular song and displays them in a visually appealing way. We focused primarily on representing the strength of the constituent frequencies and overall volume of the left and right channels for a particular input audio signal, and we created a couple different visualizations  to do so. Our first visualization was a particle simulator, which we adapted from an existing fire simulation. For this visual, we chose to represent the constituent frequencies of an input audio signal as a set of fire pillars (thirty-two per channel) where frequencies increase from the center outward. The width of each fire pillar varies with the magnitudes of the frequencies it contains, while its height corresponds to the volume of that range of frequencies. The hue of each flame also varies; however, this depends on how the frequency bins are distributed amongst the fire pillars. Additionally, we made a blob visualization which utilizes displacement mapping to represent these elements. For this visual, the blob is divided into sections that correspond to a particular set of frequencies. We then physically displace each section based on the magnitudes of the frequencies for that section. [MIGHT NEED TO ADD MORE ABOUT BLOB VIS]</p>
+
+<h2>Technical Approach</h2>
+<p>
+It's natural to think about music in terms of beats and frequencies, but to visualize how these musical components change over time, it can be useful to think about music across both the time and frequency domains. The Fourier transform is a mathematical operation that is based on the premise that any real (or complex) valued function can be represented as a linear combination of sinusoids. The Fourier transform can transform can "extract" the coefficients of the sinusoids that compose any real-valued function (often times this function is referred to as a "time-domain" signal). Each coefficient can be represented as: <br /><br />$H(\omega) = \int_{-\infty}^\infty f(t)e^{-i\omega t} dt$ where $f(t)$ represents the time domain signal. <br /><br /> However, because we are working with digital music files, we use the Discrete Fourier Transform instead (this means we no longer need an infinite number of sinuouds to represent our time domain signal). Due to a breakthrough in computation, we can compute the DFT of a discrete time-domain signal in $O(N\log N)$, where $N$ represents the length of the signal, using the Fast Fourier Transform. For a time domain signal of length $N$, the $kth$ coefficient can be expressed as: <br /><br /> $X[k] = \sum_{n=0}^{N-1} x[n]e^{\frac{2\pi ki}{N}n}$. <br /><br /> Instead of storing the coefficients directly in an array, what is often done (as was done in our project) was to store the magnitudes of each coefficient $|X[k]|$. This is slightly more space efficient because it can be shown that $X[k]$ and $X[N-1-k]$ are complex conjugates, which further implies that they have the same magnitude. Therefore, you only need to store 50% of the actual computed magnitudes if you don't care about the complex component of each coefficient. In our project, we use these magnitudes to determine the state of the music that is playing.
+</p>
+<p>
+To compute the DFT for a mp3 files, we opted to use Javascript's WebAudioAPI. This package essentially allows you to create a dependency graph for audio processing. One of our first ideas for music visualization was to be able to see the effect of stereo in different songs. Therefore, we use what is called a Splitter node to examine both the left and right channels of the mp3 file. Then we create a ScriptNode which streams in the song one chunk at a time. We then run an FFT via an AnalyserNode on the raw data from both channels of this audio chunk and pass that data on to our visualizer. In the process, we also implemented a functionality to play/pause and stop the current song. We do this by keeping track of the relative time at which the track was last paused and seeking to that point in the track if play is ever called again. Additionally, we compute the average volume of each audio channel by computing the average of the magnitudes output by the FFT for that channel, giving us a concrete value we can use later in our visualization. Thus, our process combines elements of both the time and frequency domain for dynamic visualization of audio. </p>
+
+<p>In order to visualize these effects, we created two different representations: a fire particle simulation and blob visualization.</p>
+
+<p><b>Particle Simulation:</b><br>Our particle-based visualization is partially inspired by a fire simulator we discovered online (linked in the references). The original fire simulation generated a single flame based on a variety of factors, of which we retained the variance in the initial positions of the particles as well as the base speed at which they travel and die out. The particles are removed when they have reached certain threshold conditions. Because our goal was to visualize the processed frequency data, we made a number of major alterations to the code. Instead of a singular flame, we split the particle generators into sixty-four separate points spread evenly across the screen (thirty-two per channel) to visualize the frequency data. Each pillar corresponds to a particular range of frequencies in our DFT chunk. For each of these 64 locations, we generate around 30 particles from the base of that screen, and also give each particle an initial velocity. In order to maintain a blurring effect, we make this velocity a random variable, where the variance is a function of channel's volume. Additionally, the radius of each particle at some bin is a direct function of the magnitude of the corresponding frequency. As a result the fire pillar corresponding to a dominant frequency range and audio channel will be both taller and wider as a result. One other feature that is influeced by magnitude is the height of the pillar–as the magnitude increases, the longer the particles will survive, which means that the pillar will appear taller. The way we implement this is by changing the color transparency over time as a function of magnitude. When a particle is completely transparent it is marked for removal. Because particles corresponding to high magnitudes stay opaque for longer, their pillars appear taller. This is interesting from a frequency analysis perspective because it indicates correlation between the frequency components within short time intervals. Visually, we observe this effect as a continuous change in a motion and color that seems to "follow" the beat of the music. Without the correlation between sequential DFT's, the visualization becomes less aesthetically interesting.</p>
+
+<p>We also created two different variants of the fire simulation by dividing the 128 total frequency bins generated by the DFT among each set of fire pillars differently. The first variant splits them evenly, with each pillar representing a group of four consecutive bins. For both variants, the left bins represent the left audio channels and the right bins represent the right audio channels. In each channel, the lowest frequencies are located in the middle of the screen and the highest frequencies are near the edge. For this visualization, we also modified how the color of each generated particle was determined. Instead of semi-randomly determining the color as the original simulation did, we base each particle’s color off the magnitude of the corresponding frequency component. This value is then interpolated into a color range specified by either the left or right audio channel. The data type of our DFT coefficeints is uint8, which means that the maximum value in the DFT is 255. Therefore we scale each magnitude by $\frac{1}{255}$ and then use that fraction to interpolate into the range of HSV colors. For the left channel, we used values between 0 and 180, and for the right channel, we used values between -180 and 0. Visually, this is still very interesting, because though there is no notion of assign colors to frequencies, a continuous spectrum will usually appear on screen. This is again due to correlation, but this time it is correlation among different components of the DFT. In most audio data, low frequencies will dominate the frequency spectrum. In general, these frequencies become much less prominent as they increase. As a result, even though the color is not a function of frequency, we will witness a color gradient across frequencies in this visualization. Abrupt color changes represent fast changes in the frequency magnitude over time. This leads to effects like "pulsing" along with the beat.</p>
+
+<p>While the naturally occurring color gradient is an interesting visualization of correlation in music, the large magnitude of the lowest frequences tend to dominate the visuals. To prevent this it would be nice to find a way to amplify the higher frequencies. The second variant was inspired by the way frequencies are actually grouped musically, where each octave up represents a doubling in frequency. As such, this one splits the bins logarithmically, with fewer bins grouped together at lower frequencies and more bins grouped at higher. We achieve this split by first computing the total “width” of the buckets by taking the base-2 logarithm of the number of frequency bins produced by the FFT (128 here) then dividing the result by 32 (the number of fire pillars per channel) to get the “width” per pillar. Now that we have the lower and upper bounds on each pillar, we can distribute the FFT’s frequency bins by taking the base-2 logarithm of their bin number and placing them accordingly, with the zeroth bin always placed in the first fire pillar. Because songs have a tendency to be dominated by lower frequencies, resulting in a large amount of red in the final visualization as these frequencies are less grouped. As such, we also modified the color calculations on particle generation to simply determine a particle’s color based on its corresponding frequency range’s distance from the lowest frequency range present, providing better overall contrast at the cost of representing signal strength through only the size and speed of each particle.
+</p>
+
+<p><b>Blob Visualization:</b><br></p>
+
+<p>
+    Our blob simulation was inspired by the shader portion of project 3 as well as various projects found online. Our goal was to create a 3D visualization using a 2D waveform, which proved to be both challenging and an interesting exploration of web graphics. Because of the open ended nature of our project, we ended up taking steps in many directions at once. A couple ideas we had were generating terrains using the FFT waveform, so the user could 'travel' through the music in a way, a simple 3D wave generation that could help the user visualize the physical wavelengths of the music as well as a physical simulation in the form of some kind of mass-spring system that could experience forces based on the beat of the music. We wanted to create a 3D object that could distort and change based on the input music, and we eventually settled on the idea of manipulating a 3D object's geometry to create an interesting visualization. Because our first simulation very clearly visualizes the magnitude of each wavelength, we decided that a more abstract visualization would be more apt for our second attempt at audio visualization.
+</p>
+<p>
+    Eventually we settled on the use of a sphere as our "base" object to manipulate. We chose a sphere for a couple reasons: their geometries are simple and fairly predictable, and are unique in that their radial distance is uniform in all normal directions. Thus it made a good baseline for us to "graph" our FFT. We came up with a few schemes to perform vertex manipulation based on the FFT, and we ran into the problem of mapping a very specific 128 length spectrum to a 3D object with a much different number of vertices.
+</p>
+
+<p>
+    Our first naive implementation was to physically graph each point to a wavelength in the FFT. We did this by scaling a vertex in its normal direction by a value directly proportional to the FFT at a certain wavelength. To fit the sphere, we created an interpolation scheme - we generated intermediate values in between each entry in our FFT and this scheme created a fairly unique visualization that resembles a spiral. Our next (succesful) visualization involved performing the opposite; instead of generating new FFT entries, we downsampled the FFT into only 32 samples and scaled each vertex in each horizontal ring in the geometry by the same FFT value. It was here we found that the vast majority of songs are dominated by lower frequencies, and are incredibly sparse at higher frequencies. We took the technical constraint of being unable to match the number of vertices and number of entries in our FFT (even with our interpolation schemes) as an opportunity to filter the extremely low and high frequencies from our FFT. Our result was a much more interesting visualization that wasn't dominated by a single value and left certain parts of our sphere 'blank'.
+    As a final visualization, we scaled the vertices along a single axis based on the values of the FFT in an attempt to create "wings" that emanated from our sphere visualization. With the rendering scheme we chose, we thought it created a cool effect that we chose to leave in our visualization.
+</p>
+
+<p>
+    Our other large challenge was creating the lighting and effects we wanted in this visualization. After discovering THREEjs postprocessing libraries, we added a bloom effect to our visualization as well as a bright red lighting that would contrast very starkly to the empty black background. In addition, we implemented a couple additional features. The user can toggle and toggle off rendering and choose to display the rendered object or just the mesh of the object. The user is able to toggle this as well as the different visualizations as the song is playing, and see the differences between each visualization live. In addition, the user can pan, zoom and rotate the object with mouse inputs.
+</p>
+
+<h2>Results</h2>
+<p><b>Fire Simulation</b><br>
+- Frequency bins evenly split among fire pillars<br>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/haUPbZffOV0" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br>
+Song Used: Jazz by Mick Jenkins
+<br><br>
+- Frequency bins logarithmically split among fire pillars<br>
+<iframe width="560" height="315" src="https://www.youtube.com/embed/5ytPRNfmPOo" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe><br>
+Song Used: Someday My Prince Will Come by Miles Davis
+</p>
+<br>
+<p><b>Blob Visualization</b><br></p>
+
+<h2>References</h2>
+<p>- <a href="https://github.com/ethanhjennings/webgl-fire-particles">Original fire particle simulation</a><br>
+- Web Audio API Nodes: <a href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode">AnalyserNode</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/ScriptProcessorNode">ScriptProcessorNode</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/ChannelSplitterNode">ChannelSplitterNode</a>
+
+<h2>Contributions</h2>
+<p>
+Jarry wrote the code to process the audio files and set up the Audio Computation graph in Javascript. He also made the naive first visualization (seen in the first milestone report). For the more graphically intensive part of the project, he drew inspiration from the fire simulation found online decided to use the frequency analsis from the audio to power the particle simulation. He worked on getting the particle simulation to correspond to the music, and he also made the particles change properties after being exposed to different frequencies to provide dynamic visual effects.</p>
+
+<p>Lucy took the particle simulator after Jarry's changes and created the variant that uses a logarithmic bin-splitting algorithm instead of dividing the frequency bins amongst the fire pillars evenly (along with minor changes to particle generation to account for color contrast issues). She also implemented the song selection feature in the UI and tried to do some initial work on integrating shaders after the audio processing (this was ultimately scrapped in favor of the particle simulation).</p>
+<p>
+    Jacky helped tune the particle simulation and added parameters that would help the simulation appear to bounce with the music. He also created the blob visualization and created the various interpolation schemes from which the FFT was sampled onto the sphere. In addition, he built and styled the UI so that each simulation could run on the same site and integrated user inputs with functionality in the visualizations.
+</p>
+
+<p>
+Link to final project video:
+</p>
+
+<p>
+    <a href="./particles.html">Link to final demo</a>
+</p>
 </body>
 </html>
