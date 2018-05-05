@@ -390,14 +390,10 @@
                     stop();
                     pausedAt = elapsed;
                 };
+
                 var stop = function() {
                     if (source) {
-                        if (scriptNode) {
-                            scriptNode.disconnect(context.destination);
-                        }
-                        source.disconnect();
-                        source.stop(0);
-                        source = null;
+                      source.stop(0);
                     }
                     pausedAt = 0;
                     startedAt = 0;
