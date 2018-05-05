@@ -304,6 +304,17 @@
                 });
             }
             function load_music(url) {
+                if (context) {
+                  context.close().then(function() {
+                    var play = document.querySelector('[data-js="play"]'),
+                        stop = document.querySelector('[data-js="stop"]');
+                    var playClone = play.cloneNode(true);
+                    play.parentNode.replaceChild(playClone, play);
+                    var stopClone = stop.cloneNode(true);
+                    stop.parentNode.replaceChild(stopClone, stop);
+                  });
+                }
+                context = new AudioContext();
                 var request = new XMLHttpRequest();
                 request.open("GET", url, true);
                 request.responseType = "arraybuffer";
