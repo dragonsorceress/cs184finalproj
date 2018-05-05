@@ -42,7 +42,7 @@ function init() {
 
     // Lights
 
-    var ambientColor = (0.15) * 0xffffff;
+    var ambientColor = (0.20) * 0xff00ff;
     var light = new THREE.AmbientLight( ambientColor );
     scene.add( light );
     lights.push(light);
@@ -54,7 +54,7 @@ function init() {
     lights.push(light4);
 
     var light5 = new THREE.PointLight( 0xff0000 );
-    light5.position.set( 1.0, 0.0, 0.5 ).normalize().multiplyScalar(1.2);
+    light5.position.set( 1.0, 0.0, 0.8 ).normalize().multiplyScalar(1.2);
     // light5.add( new THREE.Mesh( new THREE.SphereGeometry( 0.03, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0xff0000 } ) ) );
     scene.add( light5 );
     lights.push(light5);
