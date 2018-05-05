@@ -11,6 +11,7 @@ article, aside, canvas, details, embed,
 figure, figcaption, footer, header, hgroup,
 menu, nav, output, ruby, section, summary,
 time, mark, audio, video {
+font-family: sans-serif;
 margin: 0;
 padding: 0;
 border: 0;
@@ -60,11 +61,31 @@ html {
     right: 0px;
     top: 0px;
     padding: 1rem;
-    background: rgba(255,255,255,0.5);
+    background: rgba(255,255,255,1.0);
+    border: 2px solid black;
+}
+
+.title {
+    position:absolute;
+    left:0px;
+    top:0px;
+    font-size:3rem;
+    padding: 1rem;
+    color: white;
 }
 
 button {
     width: 50%;
+    border: none;
+    outline:none;
+    color: black;
+    text-align: center;
+    text-decoration: none;
+    font-weight: 700;
+    /* display: inline-block; */
+    font-size: 16px;
+    /* margin: 4px 2px; */
+    cursor: pointer;
 }
 
 ::-webkit-scrollbar {
@@ -74,4 +95,57 @@ button {
 
 ::-webkit-scrollbar-thumb {
     background: #FF0000;
+}
+
+/* Default custom select styles */
+select {
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+    text-align: left;
+    background: #fff;
+    z-index: 100;
+    width: 100%;
+    max-width: 200px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    margin-bottom: 15px;
+}
+
+select:focus {
+    outline: none;
+}
+
+select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border: 2px solid black;
+    border-radius: 0px;
+    padding: 0.5em 1.5em;
+    font-size: 0.75em;
+    }
+.select-container {position:relative;}
+
+.select-container:after {content:""; width:0; height:0; position:absolute; pointer-events: none;}
+
+.select-container:after {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    top: 1em;
+    right: .75em;
+    border-top: 8px solid black;
+    opacity: 0.5;
+    }
+    
+select::-ms-expand {
+    display: none;
+    }
+
+option {
+    overflow: hidden;
 }
