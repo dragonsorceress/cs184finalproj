@@ -1,6 +1,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
+<script type="text/x-mathjax-config">
+ MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+ src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
 <style>
   body {
     padding: 100px;
@@ -25,23 +32,57 @@
 
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
 <h1 align="middle">Final Project: Music Visualizer</h1>
-<h2 align="middle">Jarry Xiao<br>Jacky Lu<br>Lucy Chen</h2>
+<h1 align="middle">Final Report</h1>
+<h2 align="middle">Jarry Xiao, Jacky Lu, Lucy Chen</h2>
 
-<br><br>
+<br>
 
 <div>
 
-<h2 align="middle">Milestone Report</h2>
-<p>So far, we’ve primarily dealt with processing an input audio signal to generate the frequency data we need to create our visualizer, which we’ve achieved by using the tools provided by the Web Audio API. In particular, API contains two types of nodes that are useful in processing the audio signal: the Channel Splitter Node and the Analyzer Node. We first pass the audio signal through a Channel Splitter Node to extract the signal for the left and right channels. We then pass each channel’s signal through an Analyzer Node, which internally computes the FFT over the signal while leaving the signal unchanged, allowing us to perform signal processing in real time. Finally, we can extract the processed frequency values from the node, which can then be used as the input values for the visualization. Additionally, we can use this same set of frequency data to display the volume, which we treat as the strength of the audio signal. We can determine the strength of the signal by averaging over the extracted frequencies in each time block, which we’ve presented here as a simple set of bars that vary in real-time with our computed signal strength. We currently display in the simple visualization below:</p>
+<h2>Abstract</h2>
+<p>For our final project, we created a real-time music visualizer, which extracts various elements of a particular song and displays them in a visually appealing way. We focused primarily on representing the strength of the constituent frequencies and overall volume of the left and right channels for a particular input audio signal, and we created a couple different visualizations  to do so. Our first visualization was a particle simulator, which we adapted from an existing fire simulation. For this visual, we chose to represent the constituent frequencies of an input audio signal as a set of fire pillars (thirty-two per channel) where frequencies increase from the center outward. The width of each fire pillar varies with the magnitudes of the frequencies it contains, while its height corresponds to the volume of that range of frequencies. The hue of each flame also varies; however, this depends on how the frequency bins are distributed amongst the fire pillars. Additionally, we made a blob visualization which utilizes displacement mapping to represent these elements. For this visual, the blob is divided into sections that correspond to a particular set of frequencies. We then physically displace each section based on the magnitudes of the frequencies for that section. [MIGHT NEED TO ADD MORE ABOUT BLOB VIS]</p>
 
-<img src="visual_demo.gif" style="width:100%;height:100%;">
+<h2>Technical Approach</h2>
+<p>
+It's natural to think about music in terms of beats and frequencies, but to visualize how these musical components change over time, it can be useful to think about music across both the time and frequency domains. The Fourier transform is a mathematical operation that is based on the premise that any real (or complex) valued function can be represented as a linear combination of sinusoids. The Fourier transform can transform can "extract" the coefficients of the sinusoids that compose any real-valued function (often times this function is referred to as a "time-domain" signal). Each coefficient $H(\omega) = \int_{-\infty}^\infty f(t)e^{-i\omega t} dt$ where $f(t)$ represents the time domain signal. However, because we are working with digital music files, we use the Discrete Fourier Transform instead (this means we no longer need an infinite number of sinuouds to represent our time domain signal). Due to a breakthrough in computation, we can compute the DFT of a discrete time-domain signal in $O(N\log N)$, where $N$ represents the length of the signal, using the Fast Fourier Transform. For a time domain signal of length $N$, the $kth$ coefficient can be expressed as $X[k] = \sum_{n=0}^{N-1} x[n]e^{\frac{2\pi ki}{N}n}$. Instead of storing the coefficients directly in an array, what is often done (as was done in our project) was to store the magnitudes of each coefficient $|X[k]|$. This is slightly more space efficient because it can be shown that $X[k]$ and $X[N-1-k]$ are complex conjugates, which further implies that they have the same magnitude. Therefore, you only need to store 50% of the actual computed magnitudes if you don't care about the complex component of each coefficient. In our project, we use these magnitudes to determine the state of the music that is playing.
+</p>
+<p>
+To compute the DFT for a mp3 files, we opted to use Javascript's WebAudioAPI. This package essentially allows you to create a dependency graph for audio processing. One of our first ideas for music visualization was to be able to see the effect of stereo in different songs. Therefore, we use what is called a Splitter node to examine both the left and right channels of the mp3 file. Then we create a ScriptNode which streams in the song one chunk at a time. We then run an FFT via an AnalyserNode on the raw data from both channels of this audio chunk and pass that data on to our visualizer. In the process, we also implemented a functionality to play/pause and stop the current song. We do this by keeping track of the relative time at which the track was last paused and seeking to that point in the track if play is ever called again. Additionally, we compute the average volume of each audio channel by computing the average of the magnitudes output by the FFT for that channel, giving us a concrete value we can use later in our visualization. Thus, our process combines elements of both the time and frequency domain for dynamic visualization of audio. </p>
 
-<p>While we haven’t yet done as much on the graphical portion of the music visualizer as we were originally planning to, the audio processing is essentially complete, though we may consider also extracting volume-based information (which can be done using the frequency data we already have). As such, we will be heavily focusing on further developing the complexity and aesthetics of our visual representation in this upcoming week.</p>
+<p>In order to visualize these effects, we created two different representations: a fire particle simulation and blob visualization.</p>
 
-<p>Link to presentation slides: <a href="https://docs.google.com/presentation/d/1S7Kdlry3I4JjSSsLQZxbS4dbwkLIWmFwXh2LuDAJVLQ/edit#slide=id.g3874420929_0_0">CS 184 Final Project Milestone Slides</a></p>
+<p><b>Particle Simulation:</b><br>Our particle-based visualization is partially inspired by a fire simulator we discovered online (linked in the references). The original fire simulation generated a single flame based on a variety of factors, of which we retained the variance in the initial positions of the particles as well as the base speed at which they travel and die out. The particles are removed when they have reached certain threshold conditions. Because our goal was to visualize the processed frequency data, we made a number of major alterations to the code. Instead of a singular flame, we split the particle generators into sixty-four separate points spread evenly across the screen (thirty-two per channel) to visualize the frequency data. Each pillar corresponds to a particular range of frequencies in our DFT chunk. For each of these 64 locations, we generate around 30 particles from the base of that screen, and also give each particle an initial velocity. In order to maintain a blurring effect, we make this velocity a random variable, where the variance is a function of channel's volume. Additionally, the radius of each particle at some bin is a direct function of the magnitude of the corresponding frequency. As a result the fire pillar corresponding to a dominant frequency range and audio channel will be both taller and wider as a result. One other feature that is influeced by magnitude is the height of the pillar–as the magnitude increases, the longer the particles will survive, which means that the pillar will appear taller. The way we implement this is by changing the color transparency over time as a function of magnitude. When a particle is completely transparent it is marked for removal. Because particles corresponding to high magnitudes stay opaque for longer, their pillars appear taller. This is interesting from a frequency analysis perspective because it indicates correlation between the frequency components within short time intervals. Visually, we observe this effect as a continuous change in a motion an color that seems to "follow" the beat of the music. Without the correlation between sequential DFT's, the visualization becomes less aesthetically interesting.</p>
+
+<p>We also created two different variants of the fire simulation by dividing the 128 total frequency bins generated by the DFT among each set of fire pillars differently. The first variant splits them evenly, with each pillar representing a group of four consecutive bins. For both variants, the way that the bins are set up is that the left bins represent the left audio channels and the right bins represent the right audio channels. In each channel, the lowest frequencies are located in the middle of the screen and the highest frequencies are near the edge. For this visualization, we also modified how the color of each generated particle was determined. Instead of semi-randomly determining the color as the original simulation did, we base each particle’s color off the magnitude of the corresponding frequency component. This value is then interpolated into a color range specified by either the left or right audio channel. The data type of our DFT coefficeints is uint8, which means that the maximum value in the DFT is 255. Therefore we scale each magnitude by $\frac{1}{255}$ and then use that fraction to interpolate into the range of HSV colors. For the left channel, we used values between 0 and 180, and for the right channel, we used values between -180 and 0. Visually, this is still very interesting, because though there is not notion of assign colors to frequencies, a continuous spectrum will usually appear on screen. This is again due to correlation, but this time it is correlation among different components of the DFT. In most audio data, you will find low frequencies to dominate the frequency spectrum. In general, these frequencies become much less prominent as they increase. As a result, even though the color is a function of frequency, we will witness a color gradient across frequencies in this visualization. Abrupt color changes represent fast changes in the frequency magnitude over time. This leads to effects like "pulsing" along with the beat.</p>
+
+<p>While the naturally occurring color gradient is an interesting visualization of correlation in music, the large magnitude of the lowest frequences tend to dominate the visuals. To prevent this it would be nice to find a way to amplify the higher frequencies. The second variant was inspired by the way frequencies are actually grouped musically, where each octave up represents a doubling in frequency. As such, this one splits the bins logarithmically, with fewer bins grouped together at lower frequencies and more bins grouped at higher. We achieve this split by first computing the total “width” of the buckets by taking the base-2 logarithm of the number of frequency bins produced by the FFT (128 here) then dividing the result by 32 (the number of fire pillars per channel) to get the “width” per pillar. Now that we have the lower and upper bounds on each pillar, we can distribute the FFT’s frequency bins by taking the base-2 logarithm of their bin number and placing them accordingly, with the zeroth bin always placed in the first fire pillar. Because songs have a tendency to be dominated by lower frequencies, resulting in a large amount of red in the final visualization as these frequencies are less grouped. As such, we also modified the color calculations on particle generation to simply determine a particle’s color based on its corresponding frequency range’s distance from the lowest frequency range present, providing better overall contrast at the cost of only representing signal strength through the size and speed of each particle.
+</p>
+
+<p><b>Blob Visualization:</b><br></p>
+
+<p>INSERT PROBLEMS ENCOUNTERED AND LESSONS LEARNED HERE</p>
+
+<h2>Results</h2>
+(having a few videos here would probably be preferable)
+[Fire Simulation]
+Linear
+Logarithmic
+
+[Blob Visualization]
+Wings
+Blob
+Rings
+
+<h2>References</h2>
+<p>- <a href="https://github.com/ethanhjennings/webgl-fire-particles">Original fire particle simulation</a><br>
+- Web Audio API Nodes: <a href="https://developer.mozilla.org/en-US/docs/Web/API/AnalyserNode">AnalyserNode</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/ScriptProcessorNode">ScriptProcessorNode</a>, <a href="https://developer.mozilla.org/en-US/docs/Web/API/ChannelSplitterNode">ChannelSplitterNode</a>
+
+<h2>Contributions</h2>
+<p>
+Jarry wrote the code to process the audio files and set up the Audio Computation graph in Javascript. He also made the naive first visualization (seen in the first milestone report). For the more graphically intensive part of the project, he drew inspiration from the fire simulation found online decided to use the frequency analsis from the audio to power the particle simulation. He worked on getting the particle simulation to correspond to the music, and he also made the particles change properties after being exposed to different frequencies to provide dynamic visual effects.</p>
 
 <p>
-    Link to project video: <a href="https://www.youtube.com/watch?v=0GZiy987WLw">Project Video</a>
+Link to final project video:
 </p>
 </body>
 </html>

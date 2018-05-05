@@ -6,10 +6,10 @@ var options = {
 };
 window.onload = setupWebGL;
 
-textureList = ["rectangle.png", "circle.png", "gradient.png", "explosion.png", "flame.png"];
+textureList = ["gradient.png"];
 images = [];
 textures = [];
-currentTextureIndex = 2;
+currentTextureIndex = 0;
 
 function loadTexture(textureName,index) {
   textures[index] = gl.createTexture();
@@ -53,7 +53,7 @@ fireParticles = [];
 function createFireParticle(emitCenter, magnitude, volume, isLeft) {
   var speed = randomSpread(options.fireSpeed, volume * 3);
   var color = {};
-  var hue = randomSpread(-180 + (magnitude / 256) * 180, 8);
+  var hue = randomSpread(-180 + (magnitude / 255) * 180, 8);
   if (isLeft) {
     hue = -hue;
   }
@@ -62,8 +62,8 @@ function createFireParticle(emitCenter, magnitude, volume, isLeft) {
   var particle = {
     pos: random2DVec(emitCenter, options.fireEmitPositionSpread),
     velocity: scaleVec(randomUnitVec(Math.PI / 2, 0), speed),
-    size: {width: (magnitude / 256) * 40,
-           height: (magnitude / 256) * 40},
+    size: {width: (magnitude / 255) * 40,
+           height: (magnitude / 255) * 40},
     color: color,
     magnitude: magnitude,
     volume: volume,
@@ -138,35 +138,6 @@ function computeNewPositions(frequencies, leftVolume, rightVolume) {
   // Condensing the frequency bins down to the number of fire pillars in the visualization
   var leftBins = [];
   var rightBins = [];
-  // var inputFreqPerBin = 1;
-  // var iterationsPerScale = 8;
-  // for (var i = 127; i > 7; ) {
-  //   for (var k = 0; k < iterationsPerScale; ++k) {
-  //     var magnitude = 0;
-  //     for (var j = i; j > i - inputFreqPerBin; --j) {
-  //       magnitude += frequencies[j];
-  //     }
-  //     magnitude /= inputFreqPerBin;
-  //     leftBins.push(magnitude);
-  //     i = j;
-  //   }
-  //   inputFreqPerBin *= 2;
-  // }
-  // leftBins.reverse();
-  // inputFreqPerBin = 1;
-  // for (var i = 128; i < 248; ) {
-  //   for (var k = 0; k < iterationsPerScale; ++k) {
-  //     var magnitude = 0;
-  //     for (var j = i; j < i + inputFreqPerBin; ++j) {
-  //       magnitude += frequencies[j];
-  //     }
-  //     magnitude /= inputFreqPerBin;
-  //     rightBins.push(magnitude);
-  //     i = j;
-  //   }
-  //   inputFreqPerBin *= 2;
-  // }
-
   var binsPerColumn = 4;
   for (var i = 0; i < frequencies.length; i += binsPerColumn) {
     var magnitude = 0;
@@ -218,7 +189,6 @@ function computeNewPositions(frequencies, leftVolume, rightVolume) {
 
   // Deletes marked particles
   fireParticles = deleteMarked(fireParticles);
-  //lastParticleTime = currentParticleTime;
   document.getElementById("numParticles").innerHTML = "# particles: " + fireParticles.length;
 }
 

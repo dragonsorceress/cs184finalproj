@@ -1,9 +1,11 @@
 <head>
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="./css/common.css">
 <script type="text/javascript" src="js_helpers/webgl-utils.js"></script>
 <script type="text/javascript" src="js_helpers/mathHelper.js"></script>
 <script type="text/javascript" src="js_helpers/otherHelper.js"></script>
 <script type="text/javascript" src="js_helpers/perlin.js"></script>
+<script type="text/javascript" src="js_helpers/jquery.min.js"></script>
 <!-- vertex shader -->
 <script id="2d-vertex-shader" type="x-shader/x-vertex">
 attribute vec2 a_position;
@@ -43,7 +45,7 @@ void main() {
 }
 </script>
 
-<script type="text/javascript" src="play_audio.js"></script>
+<script id="js_source" type="text/javascript" src="play_audio.js"></script>
 
 <script>
 // YOU NEED TO CHANGE THE ARRAY OF SONG URLs AND
@@ -89,117 +91,50 @@ function switchSongs(i)
 }
 </script>
 
-
-<style>
-    html, body, div, span, applet, object, iframe,
-    h1, h2, h3, h4, h5, h6, p, blockquote, pre,
-    a, abbr, acronym, address, big, cite, code,
-    del, dfn, em, img, ins, kbd, q, s, samp,
-    small, strike, strong, sub, sup, tt, var,
-    b, u, i, center,
-    dl, dt, dd, ol, ul, li,
-    fieldset, form, label, legend,
-    table, caption, tbody, tfoot, thead, tr, th, td,
-    article, aside, canvas, details, embed,
-    figure, figcaption, footer, header, hgroup,
-    menu, nav, output, ruby, section, summary,
-    time, mark, audio, video {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 100%;
-    font: inherit;
-    vertical-align: baseline;
-    }
-    /* HTML5 display-role reset for older browsers */
-    article, aside, details, figcaption, figure,
-    footer, header, hgroup, menu, nav, section {
-    display: block;
-    }
-    body {
-    line-height: 1;
-    }
-    ol, ul {
-    list-style: none;
-    }
-    blockquote, q {
-    quotes: none;
-    }
-    blockquote:before, blockquote:after,
-    q:before, q:after {
-    content: '';
-    content: none;
-    }
-    table {
-    border-collapse: collapse;
-    border-spacing: 0;
-    }
-
-    html, body {
-        height:100%;
-        width:100%;
-    }
-
-    html {
-        box-sizing: border-box;
-    }
-
-    *, *:before, *:after {
-        box-sizing: inherit;
-    }
-
-    #volume {
-        height:200px;
-        width:60px;
-    }
-
-    #left, #right {
-        height:100%;
-        width:50%;
-    }
-
-    #left {
-        float:left;
-    }
-
-    .menu {
-        position:absolute;
-        right: 0px;
-        top: 0px;
-        padding: 1rem;
-        background: rgba(255,255,255,0.5);
-    }
-
-    button {
-        width: 50%;
-    }
-
-</style>
 </head>
 <body>
 
-
+    <div class="title" style="font-family:sans-serif">
+        <span>PARTICLE <br /> SIM</span>
+    </div>
     <div class="menu">
         <div style="padding:0.5rem 0;">
             <button style="float:left" data-js="play">play</button>
             <button data-js="stop">stop</button>
         </div>
-        <div>
-            <select name="song_selector" id="song_selector" onChange="switchSongs(selectedIndex)">
-            <script>
-            for (i = 0; (i < songs.length); i += 2) {
-              var file = songs[i];
-              var title = songs[i + 1];
-              document.write('<option value="' +
-                i + '">' +
-                title + '</option>\n');
-            }
-            </script>
+        <div class="select-container" style="margin-top: 10px">
+            <select class="" name="song_selector" id="song_selector" onChange="switchSongs(selectedIndex)">
+                <script>
+                for (i = 0; (i < songs.length); i += 2) {
+                  var file = songs[i];
+                  var title = songs[i + 1];
+                  document.write('<option value="' +
+                    i + '">' +
+                    title + '</option>\n');
+                }
+                </script>
             </select>
         </div>
-        <a href="blob.html" style="margin-top: 0.5rem;display:block;"><button>Blob Visual</button></a>
-        <a href="logarithmic.html" style="margin-top: 0.5rem;display:block;"><button>Fire Sim (Logarithmic)</button></a>
+        <label class="container">Logarithmic
+            <a href="./logarithmic.html"><span class="checkmark"></span></a>
+        </label>
+        <a href="blob.html" style="float:left;display:block;"><button>&#8594;</button></a>
     </div>
+    <!-- <script>
+        var check = $(".checkmark");
+        var i = 0;
+        check.click(function() {
+            $(".checkmark").toggleClass("checked");
+            var jsrc = $("#js_source");
+            if (i % 2 == 0) {
+                jsrc[0].src = "./play_audio_logarithmic.js";
+                console.log(jsrc[0].src);
+            } else {
+                jsrc[0].src = "./play_audio.js";
+                console.log(jsrc[0].src);
+            }
+        })
+    </script> -->
     <div class="containerDiv">
         <div class="leftPanel" > <canvas id="canvas"></canvas> </div>
         <div class="rightPanel" style="display:none">

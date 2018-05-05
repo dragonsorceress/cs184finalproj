@@ -16,7 +16,7 @@
         <script src="common/lib/ShaderPass.js"></script>
         <script src="common/lib/BloomPass.js"></script>
         <script src="common/lib/ShaderExtras.js"></script>
-        <script src="js_helpers/jquery.min.js"></script>
+        <script type="text/javascript" src="js_helpers/jquery.min.js"></script>
         <script>
 		// YOU NEED TO CHANGE THE ARRAY OF SONG URLs AND
 		// TITLES. Alternate MP3 file URLs and titles, in quotes
@@ -77,10 +77,9 @@
         <div class="title" style="font-family:sans-serif">
             <span>BLOB <br /> SIM</span>
         </div>
-        <style>
-
-
-        </style>
+        <div class="directions" style="font-family:sans-serif">
+            <span>Spacebar: play/pause; Right click to pan; Left Click to rotate; Scroll to zoom</span>
+        </div>
 		<div class="menu">
 	        <div style="padding:0.5rem 0;">
 	            <button style="float:left" data-js="play">play</button>
@@ -111,10 +110,9 @@
 	            </script>
 	            </select>
             </div>
-            <a href="index.html" style="float:left;display:block;"><button><span>Particle Sim (Linear)</span></button></a>
-            <a href="logarithmic.html" style="display:block;"><button>Particle Sim (Logarithmic)</button></a>
+            <a href="index.html" style="float:left;display:block;"><button><span>&#8594;</span></button></a>
+            <!-- <a href="logarithmic.html" style="display:block;"><button>Particle Sim (Logarithmic)</button></a> -->
 	    </div>
-
         <script src="./blob.js"></script>
 	</body>
 </html>

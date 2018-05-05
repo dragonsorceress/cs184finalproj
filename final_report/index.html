@@ -1,0 +1,77 @@
+<link href="https://fonts.googleapis.com/css?family=Open+Sans|Source+Sans+Pro" rel="stylesheet">
+
+<style>
+body {
+    padding: 100px;
+    width: 1000px;
+    margin: auto;
+    text-align: left;
+    font-weight: 300;
+    font-family: 'Open Sans', sans-serif;
+    color: #121212;
+}
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Source Sans Pro', sans-serif;
+    text-align: center;
+}
+img {
+    display: block;
+    max-width: 800px;
+    margin: 0 auto;
+}
+figcaption {
+    text-align: center;
+}
+table {
+    margin: 0 auto;
+    border-collapse: collapse;
+    text-align: center;
+}
+th, thead + tbody td {
+    border: 1px solid black;
+    padding: 0 1em;
+}
+td > * {
+    width: 100%;
+}
+</style>
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+</script>
+<script type="text/javascript"
+  src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+</script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML'></script>
+<title>CS 184</title>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" type="text/css" href="style.css" media="screen" />
+<h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
+<h1 align="middle">Final Project: Music Visualizer</h1>
+<h2 align="middle">Jarry Xiao<br>Jacky Lu<br>Lucy Chen</h2>
+</head>
+<body>
+<br />
+<h2 align="middle">Abstract</h2>
+<h2 align="middle">Technical Details</h2>
+<p>
+It's natural to think about music in terms of beats and frequencies, but to visualize how these musical components change over time, it can be useful to think about music across both the time and frequency domains. The Fourier transform is a mathematical operation that is based on the premise that any real (or complex) valued function can be represented as a linear combination of sinusoids. The Fourier transform can transform can "extract" the coefficients of the sinusoids that compose any real-valued function (often times this function is referred to as a "time-domain" signal). Each coefficient $H(\omega) = \int_{-\infty}^\infty f(t)e^{-i\omega t} dt$ where $f(t)$ represents the time domain signal. However, because we are working with digital music files, we use the Discrete Fourier Transform instead (this means we no longer need an infinite number of sinuouds to represent our time domain signal). Due to a breakthrough in computation, we can compute the DFT of a discrete time-domain signal in $O(N\log N)$, where $N$ represents the length of the signal, using the Fast Fourier Transform. For a time domain signal of length $N$, the $kth$ coefficient can be expressed as $X[k] = \sum_{n=0}^{N-1} x[n]e^{\frac{2\pi ki}{N}n}$. Instead of storing the coefficients directly in an array, what is often done (as was done in our project) was to store the magnitudes of each coefficient $|X[k]|$. This is slightly more space efficient because it can be shown that $X[k]$ and $X[N-1-k]$ are complex conjugates, which further implies that they have the same magnitude. Therefore, you only need to store 50% of the actual computed magnitudes if you don't care about the complex component of each coefficient. In our project, we use these magnitudes to determine the state of the music that is playing.
+</p>
+<p>
+To compute the DFT for a mp3 files, we opted to use Javascript's WebAudioAPI. This package essentially allows you to create a dependency graph for audio processing. One of our first ideas for music visualization was to be able to see the effect of stereo in different songs. Therefore, we use what is called a Splitter node to examine both the left and right channels of the mp3 file. Then we create a ScriptNode which streams in the song one chunk at a time. We then run an FFT on the raw data from both channels of this audio chunk and pass that data on to our visualizer. In the process, we also implemented a functionality to play/pause and stop the current song. We do this by keeping track of the relative time at which the track was last paused and seeking to that point in the track if play is ever called again. Thus, our process combines elements of both the time and frequency domain for dynamic visualization of audio. Some effects of this are seen in the visuals the music creates, and we will touch upon them again in a later section.
+</p>
+<h2 align="middle">Results</h2>
+<h2 align="middle">References</h2>
+<h2 align="middle">Contributions from each team member</h3>
+<div align="left">
+<h3> Jarry Xiao: </h3>
+<p>
+Jarry wrote the code to process the audio files and set up the Audio Computation graph in Javascript. He also made the naive first visualization (seen in the first milestone report). For the more graphically intensive part of the project, he drew inspiration from the fire simulation found online decided to use the frequency analsis from the audio to power the particle simulation. He worked on getting the particle simulation to correspond to the music, and he also made the particles change properties after being exposed to different frequencies to provide dynamic visual effects.</p>
+</div>
+
+</body>
+</html>
+
+
+
+
+
