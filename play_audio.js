@@ -138,35 +138,6 @@ function computeNewPositions(frequencies, leftVolume, rightVolume) {
   // Condensing the frequency bins down to the number of fire pillars in the visualization
   var leftBins = [];
   var rightBins = [];
-  // var inputFreqPerBin = 1;
-  // var iterationsPerScale = 8;
-  // for (var i = 127; i > 7; ) {
-  //   for (var k = 0; k < iterationsPerScale; ++k) {
-  //     var magnitude = 0;
-  //     for (var j = i; j > i - inputFreqPerBin; --j) {
-  //       magnitude += frequencies[j];
-  //     }
-  //     magnitude /= inputFreqPerBin;
-  //     leftBins.push(magnitude);
-  //     i = j;
-  //   }
-  //   inputFreqPerBin *= 2;
-  // }
-  // leftBins.reverse();
-  // inputFreqPerBin = 1;
-  // for (var i = 128; i < 248; ) {
-  //   for (var k = 0; k < iterationsPerScale; ++k) {
-  //     var magnitude = 0;
-  //     for (var j = i; j < i + inputFreqPerBin; ++j) {
-  //       magnitude += frequencies[j];
-  //     }
-  //     magnitude /= inputFreqPerBin;
-  //     rightBins.push(magnitude);
-  //     i = j;
-  //   }
-  //   inputFreqPerBin *= 2;
-  // }
-
   var binsPerColumn = 4;
   for (var i = 0; i < frequencies.length; i += binsPerColumn) {
     var magnitude = 0;
@@ -218,7 +189,6 @@ function computeNewPositions(frequencies, leftVolume, rightVolume) {
 
   // Deletes marked particles
   fireParticles = deleteMarked(fireParticles);
-  //lastParticleTime = currentParticleTime;
   document.getElementById("numParticles").innerHTML = "# particles: " + fireParticles.length;
 }
 

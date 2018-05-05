@@ -171,7 +171,6 @@ function computeNewPositions(leftBins, rightBins, leftVolume, rightVolume) {
 
   // Deletes marked particles
   fireParticles = deleteMarked(fireParticles);
-  //lastParticleTime = currentParticleTime;
   document.getElementById("numParticles").innerHTML = "# particles: " + fireParticles.length;
 }
 
