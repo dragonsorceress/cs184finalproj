@@ -3,6 +3,7 @@ var options = {
   fireSpeed: 800.0,
   fireDeathSpeed: 100.0
 };
+
 window.onload = setupWebGL;
 
 textureList = ["gradient.png"];

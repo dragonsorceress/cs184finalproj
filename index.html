@@ -110,19 +110,24 @@ function switchSongs(i)
                 </script>
             </select>
         </div>
-        Logarithmic <input type="checkbox" id="myCheck" onclick="toggleLog()"><br>
-        <a href="blob.html" style="float:left;display:block;"><button>&#8594;</button></a>
+        <label class="container">Logarithmic
+            <span class="checkmark"></span>
+        </label>
+        <a href="blob.html" style="float:left;display:block;"><button><span>&#8594;</span></button></a>
     </div>
     <script>
-      var is_logarithmic;
-      function toggleLog() {
-        var checkbox = document.getElementById("myCheck");
-        if (checkbox.checked == true) {
-          is_logarithmic = true;
+    var is_logarithmic = false;
+    var check = $(".checkmark");
+    var i = 0;
+    check.click(function() {
+        var c = $(".checkmark");
+        $(".checkmark").toggleClass("checked");
+        if (c.hasClass("checked")) {
+            is_logarithmic = true;
         } else {
-          is_logarithmic = false;
+            is_logarithmic = false;
         }
-      }
+    })
     </script>
     <div class="containerDiv">
         <div class="leftPanel" > <canvas id="canvas"></canvas> </div>
